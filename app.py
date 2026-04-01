@@ -206,7 +206,7 @@ if check_password():
                 
                 if not df_chart.empty:
                     df_chart['Month'] = df_chart['Date'].dt.strftime('%m-%Y') 
-                    summary = df_chart.groupby(['Month', 'Machine_Name']).size().reset_index(name='Count')
+                    summary = df_chart.groupby(['Month', 'Cable_Name']).size().reset_index(name='Count')
                     
                     # 💡 กราฟแท่ง: ล็อกสีตัวอักษรทุกจุดให้เป็นสีดำสนิท
                     chart = alt.Chart(summary).mark_bar().encode(
