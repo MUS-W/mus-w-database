@@ -121,12 +121,18 @@ if check_password():
             df = get_data()
             cable_list = df['Cable_Name'].unique().tolist() if not df.empty else []
             
-            # กล่อง 1: พิมพ์ค้นหา (คีย์บอร์ดมือถือเด้งชัวร์)
             search_kw1 = st.text_input("🔍 พิมพ์รหัสสายเพื่อค้นหา:", key="search1")
-            filtered_list1 = [c for c in cable_list if search_kw1.lower() in str(c).lower()] if search_kw1 else cable_list
+            # กรองข้อมูล
+            filtered_list1 = [c for c in cable_list if str(search_kw1).lower().strip() in str(c).lower()] if search_kw1 else cable_list
             
-            # กล่อง 2: กดเลือกจากรายการที่กรองแล้ว
-            selected = st.selectbox("เลือกรหัสสาย Kickless จากรายการ", ["-- กรุณาเลือกสาย --"] + filtered_list1)
+            # 💡 ไฮไลท์การแก้ปัญหา: ถ้าพิมพ์ค้นหาแล้วเจอสาย ให้มัน "เลือกให้อัตโนมัติ" ทันที จะได้ไม่ต้องกด 2 รอบ!
+            default_idx1 = 1 if (search_kw1 and len(filtered_list1) > 0) else 0
+            
+            selected = st.selectbox(
+                "เลือกรหัสสาย Kickless จากรายการ", 
+                ["-- กรุณาเลือกสาย --"] + filtered_list1,
+                index=default_idx1
+            )
             
             if st.button("ค้นหาข้อมูลล่าสุด", use_container_width=True):
                 if selected == "-- กรุณาเลือกสาย --":
@@ -144,16 +150,21 @@ if check_password():
         with sub_tab2:
             mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
             
-            # ดึงระบบค้นหาออกมานอก Form เพื่อให้ทำงานแบบ Real-time ทันทีที่พิมพ์
             if mode == "ลงข้อมูลสายใหม่":
                 c_name = st.text_input("ชื่อ/รหัส สาย Kickless เส้นใหม่:")
             else:
-                # กล่อง 1: พิมพ์ค้นหาสายเดิม
                 search_kw2 = st.text_input("🔍 พิมพ์รหัสสายเดิมเพื่อค้นหา:", key="search2")
-                filtered_list2 = [c for c in cable_list if search_kw2.lower() in str(c).lower()] if search_kw2 else cable_list
+                filtered_list2 = [c for c in cable_list if str(search_kw2).lower().strip() in str(c).lower()] if search_kw2 else cable_list
                 
-                # กล่อง 2: กดเลือกสายที่ต้องการอัพเดท
-                c_name = st.selectbox("เลือกสายเดิมจากรายการ:", filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"])
+                # 💡 เลือกอัตโนมัติให้หน้าอัพเดทเหมือนกัน
+                default_idx2 = 1 if (search_kw2 and len(filtered_list2) > 0) else 0
+                options2 = ["-- กรุณาเลือกสาย --"] + filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"]
+                
+                c_name = st.selectbox(
+                    "เลือกสายเดิมจากรายการ:", 
+                    options2,
+                    index=default_idx2 if filtered_list2 else 0
+                )
             
             with st.form("input_form", clear_on_submit=True):
                 st.markdown("**กำหนดวันที่และเวลา:**")
