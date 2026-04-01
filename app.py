@@ -14,14 +14,10 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* พื้นหลังแอปสีเทาอ่อน */
     .stApp { background-color: #E5E5E5; }
     header { visibility: hidden; }
-    
-    /* บังคับตัวหนังสือทั่วไปให้เป็นสีดำ */
     .stApp, .stApp p, .stApp span, .stApp label, .stRadio label { color: #000000 !important; }
 
-    /* หัวข้อ MUS-W */
     .mus-header {
         background-color: #f00a0a;
         color: white !important;
@@ -34,7 +30,6 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* 💡 แก้ตรงนี้: เพิ่ม div.stDownloadButton > button เข้าไปให้เป็นสีแดง MUS-W ด้วย */
     div.stButton > button, div.stFormSubmitButton > button, div.stDownloadButton > button {
         background-color: #f00a0a !important;
         color: white !important;
@@ -74,13 +69,8 @@ st.markdown("""
         color: #000000 !important;
     }
 
-    /* ซ่อนเมนู Toolbar ดำๆ มุมขวาบนของกราฟให้หายไปเลย */
-    [data-testid="stElementToolbar"] {
-        display: none !important;
-        visibility: hidden !important;
-    }
+    [data-testid="stElementToolbar"] { display: none !important; }
 
-    /* ตาราง HTML สีขาว/ดำล้วน */
     .white-table {
         background-color: white !important;
         color: black !important;
@@ -95,26 +85,19 @@ st.markdown("""
         padding: 8px !important;
         text-align: center !important;
     }
-    .white-table th {
-        background-color: #f2f2f2 !important;
-        font-weight: bold;
-    }
+    .white-table th { background-color: #f2f2f2 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ================= 2. ระบบรักษาความปลอดภัย (Login) =================
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
 
 def check_password():
-    if st.session_state.authenticated:
-        return True
-    
+    if st.session_state.authenticated: return True
     st.markdown('<div class="mus-header">LOGIN</div>', unsafe_allow_html=True)
     with st.container():
         st.write("---")
         pwd = st.text_input("กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน:", type="password")
-        
         col1, col2, col3 = st.columns([1, 1, 1])
         with col2:
             if st.button("เข้าสู่ระบบ", use_container_width=True):
@@ -125,60 +108,63 @@ def check_password():
                     st.error("รหัสผ่านไม่ถูกต้อง!")
     return False
 
-# ================= 3. เชื่อมต่อฐานข้อมูลและเริ่มตัวแอป =================
 if check_password():
     conn = st.connection("gsheets", type=GSheetsConnection)
-    
-    def get_data():
-        return conn.read(worksheet="Kickless", ttl="1s")
-
+    def get_data(): return conn.read(worksheet="Kickless", ttl="1s")
     st.markdown('<div class="mus-header">MUS-W</div>', unsafe_allow_html=True)
     main_tab, tab_other1, tab_other2 = st.tabs(["Kickless", "Welding Transformer", "Other"])
     with main_tab:
         sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🔍 ค้นหาข้อมูล", "⚙️ จัดการข้อมูล/อัพเดท", "📊 ภาพรวม"])
 
-        # -------- แท็บ 1: ค้นหา --------
+        # -------- แท็บ 1: ค้นหา (ค้นหาด้วยชื่อ Machine) --------
         with sub_tab1:
             df = get_data()
-            cable_list = df['Cable_Name'].unique().tolist() if not df.empty else []
+            machine_list = df['Cable_Name'].unique().tolist() if not df.empty else []
             
-            search_kw1 = st.text_input("🔍 พิมพ์รหัสสายเพื่อค้นหา:", key="search1")
-            filtered_list1 = [c for c in cable_list if str(search_kw1).lower().strip() in str(c).lower()] if search_kw1 else cable_list
+            search_kw1 = st.text_input("🔍 พิมพ์ชื่อ Machine เพื่อค้นหา:", key="search1")
+            filtered_list1 = [m for m in machine_list if str(search_kw1).lower().strip() in str(m).lower()] if search_kw1 else machine_list
             default_idx1 = 1 if (search_kw1 and len(filtered_list1) > 0) else 0
             
-            selected = st.selectbox("เลือกรหัสสาย Kickless จากรายการ", ["-- กรุณาเลือกสาย --"] + filtered_list1, index=default_idx1)
+            selected_m = st.selectbox("เลือกชื่อ Machine จากรายการ", ["-- กรุณาเลือกเครื่อง --"] + filtered_list1, index=default_idx1)
             
             if st.button("ค้นหาข้อมูลล่าสุด", use_container_width=True):
-                if selected == "-- กรุณาเลือกสาย --":
-                    st.warning("กรุณาเลือกสายก่อนครับ")
+                if selected_m == "-- กรุณาเลือกเครื่อง --":
+                    st.warning("กรุณาเลือก Machine ก่อนครับ")
                 else:
-                    latest = df[df['Cable_Name'] == selected].iloc[-1]
+                    latest = df[df['Cable_Name'] == selected_m].iloc[-1]
+                    spec_info = f" (สเปค: {latest['Cable_Spec']})" if 'Cable_Spec' in latest and pd.notna(latest['Cable_Spec']) else ""
                     st.markdown(f"""
                     <div class="result-box">
-                        <div style="color:#333; font-weight:bold;">-- วันที่เปลี่ยนสายล่าสุด --</div>
+                        <div style="color:#333; font-weight:bold;">-- วันที่เปลี่ยนสายล่าสุด {spec_info} --</div>
                         <div class="result-date">{latest['Last_Changed_Date']}</div>
                     </div>
                     """, unsafe_allow_html=True)
 
-        # -------- แท็บ 2: จัดการข้อมูล --------
+        # -------- แท็บ 2: จัดการข้อมูล (Machine Input + Spec Dropdown) --------
         with sub_tab2:
             mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
             
+            spec_options = [
+                "150 sq.mm * 2.4 m",
+                "150 sq.mm * 3.0 m",
+                "200 sq.mm * 2.4 m",
+                "200 sq.mm * 3.0 m"
+            ]
+
             if mode == "ลงข้อมูลสายใหม่":
-                c_name = st.text_input("ชื่อ/รหัส สาย Kickless เส้นใหม่:")
+                m_name = st.text_input("พิมพ์ชื่อ Machine ใหม่:")
             else:
-                search_kw2 = st.text_input("🔍 พิมพ์รหัสสายเดิมเพื่อค้นหา:", key="search2")
-                filtered_list2 = [c for c in cable_list if str(search_kw2).lower().strip() in str(c).lower()] if search_kw2 else cable_list
+                search_kw2 = st.text_input("🔍 พิมพ์ชื่อ Machine เดิมเพื่อค้นหา:", key="search2")
+                filtered_list2 = [m for m in machine_list if str(search_kw2).lower().strip() in str(m).lower()] if search_kw2 else machine_list
                 default_idx2 = 1 if (search_kw2 and len(filtered_list2) > 0) else 0
-                c_name = st.selectbox("เลือกสายเดิมจากรายการ:", ["-- กรุณาเลือกสาย --"] + filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"], index=default_idx2 if filtered_list2 else 0)
+                m_name = st.selectbox("เลือกชื่อ Machine เดิม:", ["-- กรุณาเลือกเครื่อง --"] + filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"], index=default_idx2 if filtered_list2 else 0)
             
+            # เพิ่ม Dropdown เลือกสเปคสาย
+            c_spec = st.selectbox("เลือกสเปคสาย Kickless:", spec_options)
+
             with st.form("input_form", clear_on_submit=True):
                 st.markdown("**📅 กำหนดวันที่และเวลา:**")
-                
-                # ปฏิทินเลือกวันแบบเดิม
                 d = st.date_input("เลือกวันที่")
-                
-                # วงล้อเลือกเวลาแบบเดิม
                 now = datetime.now()
                 col_h, col_m = st.columns(2)
                 with col_h:
@@ -186,78 +172,47 @@ if check_password():
                 with col_m:
                     m = st.selectbox("นาที", [f"{i:02d}" for i in range(60)], index=now.minute)
                 
-                st.markdown("<br>", unsafe_allow_html=True)
-                
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
-                    if not c_name or c_name in ["ไม่มีข้อมูล", "-- กรุณาเลือกสาย --"]:
-                        st.error("ข้อมูลไม่ครบ!")
+                    if not m_name or m_name in ["ไม่มีข้อมูล", "-- กรุณาเลือกเครื่อง --"]:
+                        st.error("กรุณาระบุชื่อ Machine!")
                     else:
-                        # 💡 ดึง Animation การโหลดกลับมา
-                        with st.spinner('กำลังบันทึกข้อมูล... กรุณารอสักครู่ ⏳'):
+                        with st.spinner('กำลังบันทึกข้อมูล...'):
                             dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
-                            new_data = pd.DataFrame([{"Cable_Name": c_name, "Last_Changed_Date": dt_str}])
-                            updated_df = pd.concat([get_data(), new_data], ignore_index=True)
+                            new_row = {"Cable_Name": m_name, "Cable_Spec": c_spec, "Last_Changed_Date": dt_str}
+                            updated_df = pd.concat([get_data(), pd.DataFrame([new_row])], ignore_index=True)
                             conn.update(worksheet="Kickless", data=updated_df)
-                            time.sleep(1) # หน่วงเวลาให้เห็น animation นิดนึง
-                            
-                        st.toast("บันทึกข้อมูลลงระบบเรียบร้อย! ✅")
+                            time.sleep(1)
+                        st.toast("บันทึกข้อมูล Machine: " + m_name + " เรียบร้อย! ✅")
                         st.cache_data.clear()
 
-               # -------- แท็บ 3: ภาพรวม --------
+        # -------- แท็บ 3: ภาพรวม --------
         with sub_tab3:
-            st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน (แยกรายเส้น)")
+            st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน")
             df_chart = get_data().copy()
-            
             if not df_chart.empty:
                 df_chart['Date'] = pd.to_datetime(df_chart['Last_Changed_Date'], format='%d-%m-%Y %H.%M', errors='coerce')
                 df_chart = df_chart.dropna(subset=['Date'])
-                
                 if not df_chart.empty:
                     df_chart['Month'] = df_chart['Date'].dt.strftime('%m-%Y') 
+                    summary = df_chart.groupby(['Month', 'Cable_Name']).size().reset_index(name='Count')
                     
-                    summary_table = df_chart.groupby(['Month', 'Cable_Name']).size().reset_index(name='จำนวนที่เปลี่ยน')
+                    chart = alt.Chart(summary).mark_bar().encode(
+                        x=alt.X('Month:N', title='เดือน-ปี'),
+                        y=alt.Y('Count:Q', title='จำนวนครั้ง'),
+                        color=alt.Color('Cable_Name:N', title='Machine'),
+                        xOffset='Cable_Name:N'
+                    ).properties(height=350, background='white').configure_view(strokeWidth=0).configure_legend(titleColor='black', labelColor='black')
                     
-                    # กราฟแท่งสีขาว
-                    bar_chart = alt.Chart(summary_table).mark_bar().encode(
-                        x=alt.X('Month:N', title='เดือน-ปี', axis=alt.Axis(labelAngle=0, labelColor='black', titleColor='black')),
-                        y=alt.Y('จำนวนที่เปลี่ยน:Q', title='จำนวนที่เปลี่ยน (ครั้ง)', axis=alt.Axis(tickMinStep=1, labelColor='black', titleColor='black')),
-                        color=alt.Color('Cable_Name:N', title='รหัสสาย'),
-                        xOffset='Cable_Name:N' 
-                    ).properties(
-                        height=350,
-                        background='white'
-                    ).configure_view(
-                        strokeWidth=0
-                    ).configure_legend(
-                        titleColor='black',
-                        labelColor='black'
-                    )
+                    st.altair_chart(chart, use_container_width=True, theme=None)
                     
-                    st.altair_chart(bar_chart, use_container_width=True, theme=None)
-                    
-                    # ตาราง HTML สีขาวสะอาดตา 
-                    st.markdown("**📝 รายละเอียดจำนวนที่เปลี่ยน (เส้น):**")
-                    pivot_summary = summary_table.pivot(index='Cable_Name', columns='Month', values='จำนวนที่เปลี่ยน').fillna(0).astype(int)
-                    
-                    html_table = pivot_summary.to_html(classes='white-table')
-                    st.markdown(html_table, unsafe_allow_html=True)
+                    pivot = summary.pivot(index='Cable_Name', columns='Month', values='Count').fillna(0).astype(int)
+                    st.markdown(pivot.to_html(classes='white-table'), unsafe_allow_html=True)
                     
                     st.markdown("<br>", unsafe_allow_html=True)
-                    
-                    # 💡 ปุ่มโหลด CSV ใหม่ ใหญ่ ชัดเจน โหลดไปใช้ต่อใน Excel ได้เลย (รองรับภาษาไทย)
-                    csv_data = pivot_summary.to_csv().encode('utf-8-sig')
-                    st.download_button(
-                        label="📥 ดาวน์โหลดข้อมูลตาราง (CSV / Excel)",
-                        data=csv_data,
-                        file_name=f"MUS-W_Summary_{datetime.now().strftime('%Y%m%d')}.csv",
-                        mime="text/csv",
-                        use_container_width=True
-                    )
-
-                else:
-                    st.info("ไม่พบข้อมูลวันที่ครับ")
-            else:
-                st.info("ยังไม่มีข้อมูลในระบบ")
+                    csv = pivot.to_csv().encode('utf-8-sig')
+                    st.download_button("📥 ดาวน์โหลดข้อมูลสรุป (CSV)", data=csv, file_name="MUS-W_Summary.csv", mime="text/csv", use_container_width=True)
+                else: st.info("ไม่พบข้อมูลวันที่ครับ")
+            else: st.info("ยังไม่มีข้อมูลในระบบ")
 
     with tab_other1: st.info("Coming Soon")
     with tab_other2: st.info("Coming Soon")
