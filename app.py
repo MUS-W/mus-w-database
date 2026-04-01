@@ -6,20 +6,18 @@ import pandas as pd
 st.set_page_config(
     page_title="MUS-W Dashboard", 
     layout="centered",
-    # 💡 เพิ่ม &v=2 ต่อท้ายเพื่อบังคับล้างแคช
-    page_icon="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG&v=2"
+    page_icon="https://drive.google.com/uc?id=1X1y3I9VpW6-oE6p1K9rVv0lT_4-Nf6p-&v=3"
 )
 
 st.markdown("""
-<link rel="apple-touch-icon" href="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG&v=2">
-<link rel="icon" type="image/png" href="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG&v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="https://drive.google.com/uc?id=1X1y3I9VpW6-oE6p1K9rVv0lT_4-Nf6p-&v=3">
+<link rel="icon" type="image/png" sizes="32x32" href="https://drive.google.com/uc?id=1X1y3I9VpW6-oE6p1K9rVv0lT_4-Nf6p-&v=3">
+<link rel="icon" type="image/png" sizes="16x16" href="https://drive.google.com/uc?id=1X1y3I9VpW6-oE6p1K9rVv0lT_4-Nf6p-&v=3">
 
 <style>
-    /* โค้ด CSS เดิมของพี่ทั้งหมด (ห้ามแก้ส่วนสีและขนาด) */
+    /* พื้นหลังแอป */
     .stApp { background-color: #E5E5E5; }
     header { visibility: hidden; }
-    /* ... (ส่วนที่เหลือเหมือนเดิมเป๊ะ) ... */
-
 
     /* บังคับตัวหนังสือทั่วไปให้เป็นสีดำ */
     .stApp, .stApp p, .stApp span, .stApp label, .stRadio label {
@@ -47,7 +45,6 @@ st.markdown("""
         border: none !important;
         height: 50px !important;
         font-size: 18px !important;
-        font-weight: bold !important;
     }
     div.stButton > button:hover, div.stFormSubmitButton > button:hover {
         background-color: #f00a0a !important;
@@ -124,18 +121,17 @@ if check_password():
     main_tab, tab_other1, tab_other2 = st.tabs(["Kickless", "Welding Transformer", "Other"])
 
     with main_tab:
-        sub_tab1, sub_tab2 = st.tabs(["ค้นหาข้อมูล", "จัดการข้อมูล/อัพเดท"])
+        # 💡 เพิ่มแท็บ "ภาพรวม" เข้ามาเป็นแท็บที่ 3
+        sub_tab1, sub_tab2, sub_tab3 = st.tabs(["ค้นหาข้อมูล", "จัดการข้อมูล/อัพเดท", "ภาพรวม"])
 
-        # -------- หน้าค้นหา --------
+        # -------- แท็บ 1: หน้าค้นหา --------
         with sub_tab1:
             df = get_data()
             cable_list = df['Cable_Name'].unique().tolist() if not df.empty else []
             
             search_kw1 = st.text_input("🔍 พิมพ์รหัสสายเพื่อค้นหา:", key="search1")
-            # กรองข้อมูล
             filtered_list1 = [c for c in cable_list if str(search_kw1).lower().strip() in str(c).lower()] if search_kw1 else cable_list
             
-            # 💡 ไฮไลท์การแก้ปัญหา: ถ้าพิมพ์ค้นหาแล้วเจอสาย ให้มัน "เลือกให้อัตโนมัติ" ทันที จะได้ไม่ต้องกด 2 รอบ!
             default_idx1 = 1 if (search_kw1 and len(filtered_list1) > 0) else 0
             
             selected = st.selectbox(
@@ -156,7 +152,7 @@ if check_password():
                     </div>
                     """, unsafe_allow_html=True)
 
-        # -------- หน้าจัดการข้อมูล --------
+        # -------- แท็บ 2: หน้าจัดการข้อมูล --------
         with sub_tab2:
             mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
             
@@ -166,7 +162,6 @@ if check_password():
                 search_kw2 = st.text_input("🔍 พิมพ์รหัสสายเดิมเพื่อค้นหา:", key="search2")
                 filtered_list2 = [c for c in cable_list if str(search_kw2).lower().strip() in str(c).lower()] if search_kw2 else cable_list
                 
-                # 💡 เลือกอัตโนมัติให้หน้าอัพเดทเหมือนกัน
                 default_idx2 = 1 if (search_kw2 and len(filtered_list2) > 0) else 0
                 options2 = ["-- กรุณาเลือกสาย --"] + filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"]
                 
@@ -198,8 +193,33 @@ if check_password():
                         
                         updated_df = pd.concat([get_data(), new_data], ignore_index=True)
                         conn.update(worksheet="Kickless", data=updated_df)
-                        st.success("บันทึกข้อมูลลง Google Sheets เรียบร้อย!")
+                        # เปลี่ยนแจ้งเตือนให้เด้งเป็น Toast น่ารักๆ ไม่เกะกะจอ
+                        st.toast("บันทึกข้อมูลลง Google Sheets เรียบร้อย! ✅")
                         st.cache_data.clear()
+
+        # -------- แท็บ 3: หน้าภาพรวม (Dashboard) --------
+        with sub_tab3:
+            st.markdown("### 📊 สถิติการเปลี่ยนสายแยกตามเดือน")
+            df_chart = get_data().copy()
+            
+            if not df_chart.empty:
+                # แปลงคอลัมน์วันที่แบบ Text ให้เป็นระบบเวลา (Datetime) เพื่อใช้จัดกลุ่ม
+                df_chart['Date'] = pd.to_datetime(df_chart['Last_Changed_Date'], format='%d-%m-%Y %H.%M', errors='coerce')
+                df_chart = df_chart.dropna(subset=['Date'])
+                
+                if not df_chart.empty:
+                    # สร้างคอลัมน์ เดือน-ปี (เช่น 2026-04)
+                    df_chart['Month'] = df_chart['Date'].dt.strftime('%Y-%m')
+                    
+                    # นับจำนวนการเปลี่ยนสายแต่ละเส้น ในแต่ละเดือน
+                    chart_data = df_chart.groupby(['Month', 'Cable_Name']).size().unstack(fill_value=0)
+                    
+                    # พล็อตกราฟแท่ง
+                    st.bar_chart(chart_data)
+                else:
+                    st.info("ไม่พบข้อมูลวันที่ในรูปแบบที่ถูกต้องสำหรับสร้างกราฟครับ")
+            else:
+                st.info("ยังไม่มีข้อมูลในระบบครับ")
 
     with tab_other1: st.info("Coming Soon")
     with tab_other2: st.info("Coming Soon")
