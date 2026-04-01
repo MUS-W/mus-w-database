@@ -198,7 +198,7 @@ if check_password():
                         st.toast("บันทึกข้อมูลลงระบบเรียบร้อย! ✅")
                         st.cache_data.clear()
 
-        # -------- แท็บ 3: ภาพรวม --------
+               # -------- แท็บ 3: ภาพรวม --------
         with sub_tab3:
             st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน (แยกรายเส้น)")
             df_chart = get_data().copy()
@@ -230,13 +230,24 @@ if check_password():
                     
                     st.altair_chart(bar_chart, use_container_width=True, theme=None)
                     
-                    # 💡 ตาราง HTML สีขาวสะอาดตา 
+                    # ตาราง HTML สีขาวสะอาดตา 
                     st.markdown("**📝 รายละเอียดจำนวนที่เปลี่ยน (เส้น):**")
                     pivot_summary = summary_table.pivot(index='Cable_Name', columns='Month', values='จำนวนที่เปลี่ยน').fillna(0).astype(int)
                     
-                    # แปลง DataFrame เป็น HTML แล้วยัดใส่คลาส white-table ที่เราเขียนไว้ด้านบน
                     html_table = pivot_summary.to_html(classes='white-table')
                     st.markdown(html_table, unsafe_allow_html=True)
+                    
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    
+                    # 💡 ปุ่มโหลด CSV ใหม่ ใหญ่ ชัดเจน โหลดไปใช้ต่อใน Excel ได้เลย (รองรับภาษาไทย)
+                    csv_data = pivot_summary.to_csv().encode('utf-8-sig')
+                    st.download_button(
+                        label="📥 ดาวน์โหลดข้อมูลตาราง (CSV / Excel)",
+                        data=csv_data,
+                        file_name=f"MUS-W_Summary_{datetime.now().strftime('%Y%m%d')}.csv",
+                        mime="text/csv",
+                        use_container_width=True
+                    )
 
                 else:
                     st.info("ไม่พบข้อมูลวันที่ครับ")
