@@ -69,7 +69,13 @@ st.markdown("""
         color: #000000 !important;
     }
 
-    /* 💡 บังคับตาราง HTML ให้เป็นสีขาว/ดำล้วน */
+    /* 💡 ซ่อนเมนู Toolbar ดำๆ มุมขวาบนของกราฟให้หายไปเลย */
+    [data-testid="stElementToolbar"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* ตาราง HTML สีขาว/ดำล้วน */
     .white-table {
         background-color: white !important;
         color: black !important;
