@@ -150,7 +150,7 @@ if check_password():
                     </div>
                     """, unsafe_allow_html=True)
 
-        # -------- แท็บ 2: จัดการข้อมูล (Machine Input + Spec Dropdown) --------
+               # -------- แท็บ 2: จัดการข้อมูล (Machine Input + Spec Dropdown) --------
         with sub_tab2:
             mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
             
@@ -175,19 +175,26 @@ if check_password():
             with st.form("input_form", clear_on_submit=True):
                 st.markdown("**📅 กำหนดวันที่และเวลา:**")
                 d = st.date_input("เลือกวันที่")
+                
                 now = datetime.now()
                 col_h, col_m = st.columns(2)
                 with col_h:
-                    h = st.selectbox("ชั่วโมง", [f"{i:02d}" for i in range(24)], index=now.hour)
+                    # 💡 เพิ่มตัวเลือก N/A ไว้บนสุด และบวก index +1 เพื่อให้ค่าเริ่มต้นยังชี้ที่เวลาปัจจุบัน
+                    h = st.selectbox("ชั่วโมง", ["N/A"] + [f"{i:02d}" for i in range(24)], index=now.hour + 1)
                 with col_m:
-                    m = st.selectbox("นาที", [f"{i:02d}" for i in range(60)], index=now.minute)
+                    m = st.selectbox("นาที", ["N/A"] + [f"{i:02d}" for i in range(60)], index=now.minute + 1)
                 
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
                     if not m_name or m_name in ["ไม่มีข้อมูล", "-- กรุณาเลือกเครื่อง --"]:
                         st.error("กรุณาระบุชื่อ Machine!")
                     else:
                         with st.spinner('กำลังบันทึกข้อมูล...'):
-                            dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
+                            # 💡 ถ้าช่างเลือก N/A อันใดอันหนึ่ง ให้เซฟข้อความว่า N/A แทนเวลาไปเลย
+                            if h == "N/A" or m == "N/A":
+                                dt_str = f"{d.strftime('%d-%m-%Y')} N/A"
+                            else:
+                                dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
+                                
                             new_row = {"Cable_Name": m_name, "Cable_Spec": c_spec, "Last_Changed_Date": dt_str}
                             updated_df = pd.concat([get_data(), pd.DataFrame([new_row])], ignore_index=True)
                             conn.update(worksheet="Kickless", data=updated_df)
@@ -195,20 +202,20 @@ if check_password():
                         st.toast("บันทึกข้อมูล Machine: " + m_name + " เรียบร้อย! ✅")
                         st.cache_data.clear()
 
-               # -------- แท็บ 3: ภาพรวม --------
+        # -------- แท็บ 3: ภาพรวม --------
         with sub_tab3:
             st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน")
             df_chart = get_data().copy()
             
             if not df_chart.empty:
-                df_chart['Date'] = pd.to_datetime(df_chart['Last_Changed_Date'], format='%d-%m-%Y %H.%M', errors='coerce')
+                # 💡 แก้ไขดักทาง: สั่งให้ตัดเฉพาะ "วันที่" (10 ตัวแรก เช่น 24-04-2026) มาคำนวณกราฟ เพื่อไม่ให้พังตอนเจอคำว่า N/A
+                df_chart['Date'] = pd.to_datetime(df_chart['Last_Changed_Date'].astype(str).str[:10], format='%d-%m-%Y', errors='coerce')
                 df_chart = df_chart.dropna(subset=['Date'])
                 
                 if not df_chart.empty:
                     df_chart['Month'] = df_chart['Date'].dt.strftime('%m-%Y') 
                     summary = df_chart.groupby(['Month', 'Cable_Name']).size().reset_index(name='Count')
                     
-                    # 💡 กราฟแท่ง: ล็อกสีตัวอักษรทุกจุดให้เป็นสีดำสนิท
                     chart = alt.Chart(summary).mark_bar().encode(
                         x=alt.X('Month:N', title='เดือน-ปี'),
                         y=alt.Y('Count:Q', title='จำนวนครั้ง', axis=alt.Axis(tickMinStep=1)),
@@ -218,14 +225,14 @@ if check_password():
                         height=350, 
                         background='white'
                     ).configure_axis(
-                        labelColor='black', # ล็อกสีตัวเลขแกน X และ Y เป็นสีดำ */
-                        titleColor='black', # ล็อกสีชื่อแกน X และ Y เป็นสีดำ */
-                        domainColor='black', # ล็อกสีเส้นแกนเป็นสีดำ */
-                        tickColor='black', #* ล็อกสีขีดบอกสเกลเป็นสีดำ */
-                        gridColor='#f0f0f0' #* เส้นกริดพื้นหลังเป็นสีเทาอ่อนมาก */
+                        labelColor='black', 
+                        titleColor='black', 
+                        domainColor='black', 
+                        tickColor='black', 
+                        gridColor='#f0f0f0' 
                     ).configure_legend(
-                        titleColor='black', # ล็อกสีหัวข้อคำอธิบายเป็นสีดำ */
-                        labelColor='black'  # ล็อกสีชื่อ Machine เป็นสีดำ */
+                        titleColor='black', 
+                        labelColor='black'  
                     ).configure_view(
                         strokeWidth=0
                     )
@@ -242,6 +249,5 @@ if check_password():
                     st.info("ไม่พบข้อมูลวันที่ครับ")
             else: 
                 st.info("ยังไม่มีข้อมูลในระบบ")
-
     with tab_other1: st.info("Coming Soon")
     with tab_other2: st.info("Coming Soon")
