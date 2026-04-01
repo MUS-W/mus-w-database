@@ -32,7 +32,7 @@ st.markdown("""
 
     div.stButton > button, div.stFormSubmitButton > button, div.stDownloadButton > button {
         background-color: #f00a0a !important;
-        color: white !important;
+        color: #ffffff !important;
         border-radius: 8px !important;
         border: none !important;
         height: 50px !important;
