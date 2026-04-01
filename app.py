@@ -218,14 +218,14 @@ if check_password():
                         height=350, 
                         background='white'
                     ).configure_axis(
-                        labelColor='black', /* ล็อกสีตัวเลขแกน X และ Y เป็นสีดำ */
-                        titleColor='black', /* ล็อกสีชื่อแกน X และ Y เป็นสีดำ */
-                        domainColor='black', /* ล็อกสีเส้นแกนเป็นสีดำ */
-                        tickColor='black', /* ล็อกสีขีดบอกสเกลเป็นสีดำ */
-                        gridColor='#f0f0f0' /* เส้นกริดพื้นหลังเป็นสีเทาอ่อนมาก */
+                        labelColor='black', # ล็อกสีตัวเลขแกน X และ Y เป็นสีดำ */
+                        titleColor='black', # ล็อกสีชื่อแกน X และ Y เป็นสีดำ */
+                        domainColor='black', # ล็อกสีเส้นแกนเป็นสีดำ */
+                        tickColor='black', #* ล็อกสีขีดบอกสเกลเป็นสีดำ */
+                        gridColor='#f0f0f0' #* เส้นกริดพื้นหลังเป็นสีเทาอ่อนมาก */
                     ).configure_legend(
-                        titleColor='black', /* ล็อกสีหัวข้อคำอธิบายเป็นสีดำ */
-                        labelColor='black'  /* ล็อกสีชื่อ Machine เป็นสีดำ */
+                        titleColor='black', # ล็อกสีหัวข้อคำอธิบายเป็นสีดำ */
+                        labelColor='black'  # ล็อกสีชื่อ Machine เป็นสีดำ */
                     ).configure_view(
                         strokeWidth=0
                     )
