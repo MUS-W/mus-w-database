@@ -195,23 +195,40 @@ if check_password():
                         st.toast("บันทึกข้อมูล Machine: " + m_name + " เรียบร้อย! ✅")
                         st.cache_data.clear()
 
-        # -------- แท็บ 3: ภาพรวม --------
+               # -------- แท็บ 3: ภาพรวม --------
         with sub_tab3:
             st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน")
             df_chart = get_data().copy()
+            
             if not df_chart.empty:
                 df_chart['Date'] = pd.to_datetime(df_chart['Last_Changed_Date'], format='%d-%m-%Y %H.%M', errors='coerce')
                 df_chart = df_chart.dropna(subset=['Date'])
+                
                 if not df_chart.empty:
                     df_chart['Month'] = df_chart['Date'].dt.strftime('%m-%Y') 
                     summary = df_chart.groupby(['Month', 'Cable_Name']).size().reset_index(name='Count')
                     
+                    # 💡 กราฟแท่ง: ล็อกสีตัวอักษรทุกจุดให้เป็นสีดำสนิท
                     chart = alt.Chart(summary).mark_bar().encode(
                         x=alt.X('Month:N', title='เดือน-ปี'),
-                        y=alt.Y('Count:Q', title='จำนวนครั้ง'),
+                        y=alt.Y('Count:Q', title='จำนวนครั้ง', axis=alt.Axis(tickMinStep=1)),
                         color=alt.Color('Cable_Name:N', title='Machine'),
                         xOffset='Cable_Name:N'
-                    ).properties(height=350, background='white').configure_view(strokeWidth=0).configure_legend(titleColor='black', labelColor='black')
+                    ).properties(
+                        height=350, 
+                        background='white'
+                    ).configure_axis(
+                        labelColor='black', /* ล็อกสีตัวเลขแกน X และ Y เป็นสีดำ */
+                        titleColor='black', /* ล็อกสีชื่อแกน X และ Y เป็นสีดำ */
+                        domainColor='black', /* ล็อกสีเส้นแกนเป็นสีดำ */
+                        tickColor='black', /* ล็อกสีขีดบอกสเกลเป็นสีดำ */
+                        gridColor='#f0f0f0' /* เส้นกริดพื้นหลังเป็นสีเทาอ่อนมาก */
+                    ).configure_legend(
+                        titleColor='black', /* ล็อกสีหัวข้อคำอธิบายเป็นสีดำ */
+                        labelColor='black'  /* ล็อกสีชื่อ Machine เป็นสีดำ */
+                    ).configure_view(
+                        strokeWidth=0
+                    )
                     
                     st.altair_chart(chart, use_container_width=True, theme=None)
                     
@@ -221,8 +238,10 @@ if check_password():
                     st.markdown("<br>", unsafe_allow_html=True)
                     csv = pivot.to_csv().encode('utf-8-sig')
                     st.download_button("📥 ดาวน์โหลดข้อมูลสรุป (CSV)", data=csv, file_name="MUS-W_Summary.csv", mime="text/csv", use_container_width=True)
-                else: st.info("ไม่พบข้อมูลวันที่ครับ")
-            else: st.info("ยังไม่มีข้อมูลในระบบ")
+                else: 
+                    st.info("ไม่พบข้อมูลวันที่ครับ")
+            else: 
+                st.info("ยังไม่มีข้อมูลในระบบ")
 
     with tab_other1: st.info("Coming Soon")
     with tab_other2: st.info("Coming Soon")
