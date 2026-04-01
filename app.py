@@ -18,7 +18,7 @@ st.markdown("""
 
     /* หัวข้อ MUS-W */
     .mus-header {
-        background-color: #C00000;
+        background-color: #f00a0a;
         color: white !important;
         text-align: center;
         padding: 10px;
@@ -57,7 +57,7 @@ st.markdown("""
     }
     /* สีของรายการเวลาคลิก Dropdown ลงมา */
     ul[role="listbox"] li {
-        color: #000000 !important;
+        color: #F0F0F0 !important;
         background-color: #F0F0F0 !important;
     }
 
