@@ -212,7 +212,7 @@ if check_password():
                     chart = alt.Chart(summary).mark_bar().encode(
                         x=alt.X('Month:N', title='เดือน-ปี'),
                         y=alt.Y('Count:Q', title='จำนวนครั้ง', axis=alt.Axis(tickMinStep=1)),
-                        color=alt.Color('Cable_Name:N', title='Machine'),
+                        color=alt.Color('Machine_Name:N', title='Machine'),
                         xOffset='Cable_Name:N'
                     ).properties(
                         height=350, 
