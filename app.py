@@ -13,7 +13,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* พื้นหลังแอปสีเทาอ่อนเหมือนเดิม เพื่อให้ตัดกับกราฟสีขาว */
+    /* พื้นหลังแอปสีเทาอ่อนเหมือนเดิม เพื่อให้ตัดกับหัวข้อสีแดงและกราฟสีขาว */
     .stApp { background-color: #E5E5E5; }
     header { visibility: hidden; }
     
@@ -42,7 +42,7 @@ st.markdown("""
         font-size: 18px !important;
     }
 
-    .stTextInput input {
+    .stTextInput input, .stDateInput input {
         background-color: #F0F0F0 !important;
         color: #000000 !important;
         border: 1px solid #CCCCCC !important;
@@ -128,7 +128,7 @@ if check_password():
                     </div>
                     """, unsafe_allow_html=True)
 
-        # -------- แท็บ 2: จัดการข้อมูล (แก้บั๊กแป้นพิมพ์เด้งตอนใส่วันที่) --------
+        # -------- แท็บ 2: จัดการข้อมูล --------
         with sub_tab2:
             mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
             
@@ -143,17 +143,11 @@ if check_password():
             with st.form("input_form", clear_on_submit=True):
                 st.markdown("**📅 กำหนดวันที่และเวลา:**")
                 
-                # 💡 ใช้กล่องเลือกแบบ Dropdown แทน Date Input เพื่อกันแป้นพิมพ์เด้งบน iOS
+                # 💡 แก้จุดที่ 1: เปลี่ยนกลับมาใช้ปฏิทินแบบเดิมตามคำขอ
+                d = st.date_input("เลือกวันที่")
+                
+                # 💡 แก้จุดที่ 2: คงรูปแบบ Dropdown วงล้อเลือกเวลาไว้ เพราะแป้นพิมพ์ไม่เด้งและพี่โอเค
                 now = datetime.now()
-                col_d, col_mo, col_y = st.columns(3)
-                with col_d:
-                    d_day = st.selectbox("วันที่", [f"{i:02d}" for i in range(1, 32)], index=now.day-1)
-                with col_mo:
-                    d_month = st.selectbox("เดือน", [f"{i:02d}" for i in range(1, 13)], index=now.month-1)
-                with col_y:
-                    years_list = [str(i) for i in range(2024, 2035)]
-                    d_year = st.selectbox("ปี (ค.ศ.)", years_list, index=years_list.index(str(now.year)))
-
                 col_h, col_m = st.columns(2)
                 with col_h:
                     h = st.selectbox("ชั่วโมง", [f"{i:02d}" for i in range(24)], index=now.hour)
@@ -165,15 +159,14 @@ if check_password():
                     if not c_name or c_name in ["ไม่มีข้อมูล", "-- กรุณาเลือกสาย --"]:
                         st.error("ข้อมูลไม่ครบ!")
                     else:
-                        # นำค่าที่เลือกมาต่อกันเป็นข้อความ
-                        dt_str = f"{d_day}-{d_month}-{d_year} {h}.{m}"
+                        dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
                         new_data = pd.DataFrame([{"Cable_Name": c_name, "Last_Changed_Date": dt_str}])
                         updated_df = pd.concat([get_data(), new_data], ignore_index=True)
                         conn.update(worksheet="Kickless", data=updated_df)
                         st.toast("บันทึกข้อมูลเรียบร้อย! ✅")
                         st.cache_data.clear()
 
-        # -------- แท็บ 3: ภาพรวม --------
+        # -------- แท็บ 3: ภาพรวม ( Dashboard อ่านง่ายสุดๆ) --------
         with sub_tab3:
             st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน (แยกรายเส้น)")
             df_chart = get_data().copy()
@@ -187,19 +180,24 @@ if check_password():
                     
                     summary_table = df_chart.groupby(['Month', 'Cable_Name']).size().reset_index(name='จำนวนที่เปลี่ยน')
                     
-                    # 💡 สร้างกราฟแท่งแบบแยกอิสระ (Clustered Bar Chart)
+                    # 💡 แก้จุดที่ 3: บังคับให้เฉพาะตัวกราฟเป็นสีขาวสว่างๆ ไม่สนโหมดมืดของ iPad
                     bar_chart = alt.Chart(summary_table).mark_bar().encode(
-                        x=alt.X('Month:N', title='เดือน-ปี', axis=alt.Axis(labelAngle=0)),
-                        y=alt.Y('จำนวนที่เปลี่ยน:Q', title='จำนวนที่เปลี่ยน (ครั้ง)', axis=alt.Axis(tickMinStep=1)),
+                        x=alt.X('Month:N', title='เดือน-ปี', axis=alt.Axis(labelAngle=0, labelColor='black', titleColor='black')),
+                        y=alt.Y('จำนวนที่เปลี่ยน:Q', title='จำนวนที่เปลี่ยน (ครั้ง)', axis=alt.Axis(tickMinStep=1, labelColor='black', titleColor='black')),
                         color=alt.Color('Cable_Name:N', title='รหัสสาย'),
-                        xOffset='Cable_Name:N' # 💡 คำสั่งนี้ทำให้แท่งกราฟแยกกันในแต่ละเดือน
+                        xOffset='Cable_Name:N' # ทำให้แท่งกราฟแยกกันในแต่ละเดือน
                     ).properties(
-                        height=350
+                        height=350,
+                        # 💡 พระเอกของงาน: บังคับพื้นหลังกราฟเป็นสีขาว ⚪
+                        background='white'
                     ).configure_view(
-                        strokeWidth=0
+                        strokeWidth=0 # ลบเส้นขอบเพื่อความคลีน
+                    ).configure_legend(
+                        titleColor='black',
+                        labelColor='black'
                     )
                     
-                    # 💡 พระเอกของงาน: theme=None คือการสั่งให้เฉพาะกราฟเป็นสีขาวสว่างๆ 
+                    # 💡 พระเอกของงาน: ล้างธีมทั้งหมดออก เพื่อไม่ให้ Streamlit ธีมมืดมาตีกับกราฟขาวของเรา
                     st.altair_chart(bar_chart, use_container_width=True, theme=None)
                     
                     # 2. ตารางสรุป 
