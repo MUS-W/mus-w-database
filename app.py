@@ -57,7 +57,7 @@ st.markdown("""
     }
     /* สีของรายการเวลาคลิก Dropdown ลงมา */
     ul[role="listbox"] li {
-        color: #F0F0F0 !important;
+        color: #000000 !important;
         background-color: #F0F0F0 !important;
     }
 
@@ -121,8 +121,11 @@ if check_password():
             df = get_data()
             cable_list = df['Cable_Name'].unique().tolist() if not df.empty else []
             
-            # ช่องนี้สามารถเอานิ้วจิ้มแล้วพิมพ์บนคีย์บอร์ด iPad เพื่อค้นหาได้เลย!
-            selected = st.selectbox("เลือกรหัสสาย Kickless (พิมพ์ค้นหาได้)", ["-- กรุณาเลือกสาย --"] + cable_list)
+            # 💡 เพิ่มช่องพิมพ์ค้นหาแยกเพื่อแก้ปัญหา iPad แป้นไม่ขึ้น
+            search_kw1 = st.text_input("🔍 พิมพ์รหัสสายเพื่อค้นหา:", key="search1")
+            filtered_list1 = [c for c in cable_list if search_kw1.lower() in str(c).lower()] if search_kw1 else cable_list
+            
+            selected = st.selectbox("เลือกรหัสสายจากรายการ:", ["-- กรุณาเลือกสาย --"] + filtered_list1)
             
             if st.button("ค้นหาข้อมูลล่าสุด", use_container_width=True):
                 if selected == "-- กรุณาเลือกสาย --":
@@ -140,15 +143,16 @@ if check_password():
         with sub_tab2:
             mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
             
+            # 💡 ดึงระบบค้นหาออกมานอก Form เพื่อให้ทำงานแบบ Real-time บนมือถือได้
+            if mode == "ลงข้อมูลสายใหม่":
+                c_name = st.text_input("ชื่อ/รหัส สาย Kickless เส้นใหม่:")
+            else:
+                search_kw2 = st.text_input("🔍 พิมพ์รหัสสายเดิมเพื่อค้นหา:", key="search2")
+                filtered_list2 = [c for c in cable_list if search_kw2.lower() in str(c).lower()] if search_kw2 else cable_list
+                c_name = st.selectbox("เลือกรหัสสายจากรายการ:", filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"])
+            
             with st.form("input_form", clear_on_submit=True):
-                if mode == "ลงข้อมูลสายใหม่":
-                    c_name = st.text_input("ชื่อ/รหัส สาย Kickless เส้นใหม่:")
-                else:
-                    # ช่องนี้ก็พิมพ์ค้นหาได้เช่นกันครับ
-                    c_name = st.selectbox("เลือกสายเดิม (พิมพ์ค้นหาได้):", cable_list if cable_list else ["ไม่มีข้อมูล"])
-                
                 st.markdown("**กำหนดวันที่และเวลา:**")
-                # แบ่งเป็น 3 ช่อง: วันที่ | ชั่วโมง | นาที (แก้ปัญหาบั๊กเวลาบน iPad)
                 col_d, col_h, col_m = st.columns([2, 1, 1])
                 
                 with col_d:
@@ -163,10 +167,9 @@ if check_password():
                 st.markdown("<br>", unsafe_allow_html=True)
                 
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
-                    if not c_name or c_name == "ไม่มีข้อมูล":
+                    if not c_name or c_name == "ไม่มีข้อมูล" or c_name == "-- กรุณาเลือกสาย --":
                         st.error("ข้อมูลไม่ครบ กรุณาตรวจสอบอีกครั้ง!")
                     else:
-                        # นำชั่วโมงและนาทีมาประกอบกัน
                         dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
                         new_data = pd.DataFrame([{"Cable_Name": c_name, "Last_Changed_Date": dt_str}])
                         
