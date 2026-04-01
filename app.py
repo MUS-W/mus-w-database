@@ -134,7 +134,7 @@ if check_password():
                 c_name = st.selectbox("เลือกสายเดิมจากรายการ:", ["-- กรุณาเลือกสาย --"] + filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"], index=default_idx2 if filtered_list2 else 0)
             
             with st.form("input_form", clear_on_submit=True):
-                st.markdown("**📅 กำหนดวันที่และเวลา (เลื่อนแถบเพื่อเลือกเวลา แป้นพิมพ์จะไม่เด้งครับ):**")
+                st.markdown("**📅 กำหนดวันที่และเวลา**")
                 d = st.date_input("เลือกวันที่")
                 
                 # 💡 เปลี่ยนเป็น Slider เพื่อป้องกันแป้นพิมพ์เด้งบน iPad/มือถือ
