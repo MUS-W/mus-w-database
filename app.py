@@ -203,10 +203,6 @@ if check_password():
                     # 2. ตารางสรุป 
                     st.markdown("**📝 รายละเอียดจำนวนที่เปลี่ยน (เส้น):**")
                     pivot_summary = summary_table.pivot(index='Cable_Name', columns='Month', values='จำนวนที่เปลี่ยน').fillna(0).astype(int)
-                    .properties(
-                        height=350,
-                        # 💡 พระเอกของงาน: บังคับพื้นหลังกราฟเป็นสีขาว ⚪
-                        background='white')
                     st.dataframe(pivot_summary, use_container_width=True)
                 else:
                     st.info("ไม่พบข้อมูลวันที่ครับ")
