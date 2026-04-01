@@ -1,18 +1,25 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-from datetime import datetime
 
 # ================= 1. ตั้งค่าหน้าจอและดีไซน์ (CSS) =================
 st.set_page_config(page_title="MUS-W Dashboard", layout="centered")
 
 st.markdown("""
 <style>
+    /* พื้นหลังแอป */
     .stApp { background-color: #E5E5E5; }
     header { visibility: hidden; }
+
+    /* บังคับตัวหนังสือทั่วไปให้เป็นสีดำ */
+    .stApp, .stApp p, .stApp span, .stApp label, .stRadio label {
+        color: #000000 !important;
+    }
+
+    /* หัวข้อ MUS-W */
     .mus-header {
         background-color: #C00000;
-        color: white;
+        color: white !important;
         text-align: center;
         padding: 15px;
         font-size: 28px;
@@ -21,15 +28,40 @@ st.markdown("""
         margin-top: -70px;
         margin-bottom: 20px;
     }
-    div.stButton > button:first-child {
-        background-color: #C00000;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        height: 50px;
-        font-size: 18px;
-        font-weight: bold;
+
+    /* แต่งปุ่มกดทั้งหมด (ปุ่มล็อกอิน, ค้นหา, บันทึกข้อมูล) ให้เป็นสีแดง MUS-W */
+    div.stButton > button, div.stFormSubmitButton > button {
+        background-color: #C00000 !important;
+        color: white !important;
+        border-radius: 8px !important;
+        border: none !important;
+        height: 50px !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
     }
+    div.stButton > button:hover, div.stFormSubmitButton > button:hover {
+        background-color: #990000 !important;
+        color: white !important;
+    }
+
+    /* กล่อง Input และ Dropdown (บังคับพื้นสีเทาอ่อน ตัวอักษรสีดำ) */
+    .stTextInput input, .stDateInput input, .stTimeInput input {
+        background-color: #F0F0F0 !important;
+        color: #000000 !important;
+        border: 1px solid #CCCCCC !important;
+    }
+    div[data-baseweb="select"] > div {
+        background-color: #F0F0F0 !important;
+        color: #000000 !important;
+        border: 1px solid #CCCCCC !important;
+    }
+    /* สีของรายการเวลาคลิก Dropdown ลงมา */
+    ul[role="listbox"] li {
+        color: #000000 !important;
+        background-color: #FFFFFF !important;
+    }
+
+    /* กล่องแสดงผลลัพธ์ */
     .result-box {
         background-color: #D9D9D9;
         text-align: center;
@@ -41,7 +73,7 @@ st.markdown("""
     .result-date {
         font-size: 38px;
         font-weight: bold;
-        color: #000000;
+        color: #000000 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -58,17 +90,20 @@ def check_password():
     with st.container():
         st.write("---")
         pwd = st.text_input("กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน:", type="password")
-        if st.button("เข้าสู่ระบบ"):
-            if pwd == "musw1234":
-                st.session_state.authenticated = True
-                st.rerun()
-            else:
-                st.error("รหัสผ่านไม่ถูกต้อง!")
+        
+        # ใช้ columns เพื่อจัดปุ่มล็อกอินให้อยู่กึ่งกลางหน้าจอ
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col2:
+            if st.button("เข้าสู่ระบบ", use_container_width=True):
+                if pwd == "musw1234":
+                    st.session_state.authenticated = True
+                    st.rerun()
+                else:
+                    st.error("รหัสผ่านไม่ถูกต้อง!")
     return False
 
 if check_password():
     # ================= 3. เชื่อมต่อ Google Sheets =================
-    # หมายเหตุ: URL จะไปใส่ใน Streamlit Secrets ตอน Deploy
     conn = st.connection("gsheets", type=GSheetsConnection)
     
     def get_data():
@@ -115,6 +150,7 @@ if check_password():
                 d = col1.date_input("วันที่")
                 t = col2.time_input("เวลา")
                 
+                # ปุ่มบันทึกข้อมูล (โดน CSS บังคับให้เป็นสีแดง MUS-W แล้ว)
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
                     if not c_name or c_name == "ไม่มีข้อมูล":
                         st.error("ข้อมูลไม่ครบ!")
@@ -122,7 +158,6 @@ if check_password():
                         dt_str = f"{d.strftime('%d-%m-%Y')} {t.strftime('%H.%M')}"
                         new_data = pd.DataFrame([{"Cable_Name": c_name, "Last_Changed_Date": dt_str}])
                         
-                        # อัปเดตข้อมูลลง Google Sheets
                         updated_df = pd.concat([get_data(), new_data], ignore_index=True)
                         conn.update(worksheet="Kickless", data=updated_df)
                         st.success("บันทึกข้อมูลลง Google Sheets เรียบร้อย!")
