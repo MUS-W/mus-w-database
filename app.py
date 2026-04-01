@@ -84,6 +84,7 @@ st.markdown("""
         border: 1px solid #ddd !important;
         padding: 8px !important;
         text-align: center !important;
+        color: black !important;
     }
     .white-table th { background-color: #f2f2f2 !important; }
 </style>
