@@ -70,32 +70,30 @@ st.markdown("""
     }
 
     [data-testid="stElementToolbar"] { display: none !important; }
-
-        /* 💡 บังคับตาราง HTML ให้เป็นสีขาว/ดำล้วน */
-    .white-table {
+        /* 💡 บังคับตาราง HTML ให้เป็นสีขาว/ดำล้วน (แบบขั้นเด็ดขาด ล็อกทุกจุด!) */
+    table.white-table, table.white-table tbody, table.white-table thead, table.white-table tr {
         background-color: white !important;
         color: black !important;
-        border-collapse: collapse;
-        width: 100%;
-        border-radius: 5px;
-        overflow: hidden;
-        margin-top: 10px;
+        border-collapse: collapse !important;
+        width: 100% !important;
+        margin-top: 10px !important;
     }
-    .white-table th, .white-table td {
-        border: 1px solid #ddd !important;
-        padding: 8px !important;
+    
+    table.white-table th, table.white-table td {
+        background-color: white !important;
+        color: black !important; /* ล็อกสีตัวหนังสือเป็นสีดำ */
+        border: 1px solid #CCCCCC !important; /* ล็อกเส้นขอบตาราง */
+        padding: 10px !important;
         text-align: center !important;
-        color: black !important;
+        font-size: 16px !important;
     }
-    .white-table th { 
-        background-color: #f2f2f2 !important; 
-        color: black !important;
-    }
-    /* 💡 ไม้ตาย: บังคับทุกอย่างที่อยู่ข้างในตารางนี้ให้เป็นสีดำให้หมด! */
-    .white-table * {
-        color: black !important;
+    
+    table.white-table th {
+        background-color: #f2f2f2 !important; /* พื้นหลังหัวตารางสีเทาอ่อน */
+        font-weight: bold !important;
     }
 
+     
 </style>
 """, unsafe_allow_html=True)
 
