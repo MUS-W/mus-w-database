@@ -45,7 +45,7 @@ st.markdown("""
     }
 
     /* กล่อง Input และ Dropdown (บังคับพื้นสีเทาอ่อน ตัวอักษรสีดำ) */
-    .stTextInput input, .stDateInput input, .stTimeInput input {
+    .stTextInput input, .stDateInput input {
         background-color: #F0F0F0 !important;
         color: #000000 !important;
         border: 1px solid #CCCCCC !important;
@@ -91,7 +91,6 @@ def check_password():
         st.write("---")
         pwd = st.text_input("กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน:", type="password")
         
-        # ใช้ columns เพื่อจัดปุ่มล็อกอินให้อยู่กึ่งกลางหน้าจอ
         col1, col2, col3 = st.columns([1, 1, 1])
         with col2:
             if st.button("เข้าสู่ระบบ", use_container_width=True):
@@ -122,6 +121,7 @@ if check_password():
             df = get_data()
             cable_list = df['Cable_Name'].unique().tolist() if not df.empty else []
             
+            # ช่องนี้สามารถเอานิ้วจิ้มแล้วพิมพ์บนคีย์บอร์ด iPad เพื่อค้นหาได้เลย!
             selected = st.selectbox("เลือกรหัสสาย Kickless (พิมพ์ค้นหาได้)", ["-- กรุณาเลือกสาย --"] + cable_list)
             
             if st.button("ค้นหาข้อมูลล่าสุด", use_container_width=True):
@@ -144,18 +144,30 @@ if check_password():
                 if mode == "ลงข้อมูลสายใหม่":
                     c_name = st.text_input("ชื่อ/รหัส สาย Kickless เส้นใหม่:")
                 else:
-                    c_name = st.selectbox("เลือกสายเดิม:", cable_list if cable_list else ["ไม่มีข้อมูล"])
+                    # ช่องนี้ก็พิมพ์ค้นหาได้เช่นกันครับ
+                    c_name = st.selectbox("เลือกสายเดิม (พิมพ์ค้นหาได้):", cable_list if cable_list else ["ไม่มีข้อมูล"])
                 
-                col1, col2 = st.columns(2)
-                d = col1.date_input("วันที่")
-                t = col2.time_input("เวลา")
+                st.markdown("**กำหนดวันที่และเวลา:**")
+                # แบ่งเป็น 3 ช่อง: วันที่ | ชั่วโมง | นาที (แก้ปัญหาบั๊กเวลาบน iPad)
+                col_d, col_h, col_m = st.columns([2, 1, 1])
                 
-                # ปุ่มบันทึกข้อมูล (โดน CSS บังคับให้เป็นสีแดง MUS-W แล้ว)
+                with col_d:
+                    d = st.date_input("วันที่")
+                with col_h:
+                    hours = [f"{i:02d}" for i in range(24)]
+                    h = st.selectbox("ชั่วโมง", hours, index=12)
+                with col_m:
+                    mins = [f"{i:02d}" for i in range(60)]
+                    m = st.selectbox("นาที", mins, index=0)
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
                     if not c_name or c_name == "ไม่มีข้อมูล":
-                        st.error("ข้อมูลไม่ครบ!")
+                        st.error("ข้อมูลไม่ครบ กรุณาตรวจสอบอีกครั้ง!")
                     else:
-                        dt_str = f"{d.strftime('%d-%m-%Y')} {t.strftime('%H.%M')}"
+                        # นำชั่วโมงและนาทีมาประกอบกัน
+                        dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
                         new_data = pd.DataFrame([{"Cable_Name": c_name, "Last_Changed_Date": dt_str}])
                         
                         updated_df = pd.concat([get_data(), new_data], ignore_index=True)
