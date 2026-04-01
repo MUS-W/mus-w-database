@@ -18,7 +18,7 @@ st.markdown("""
 
     /* หัวข้อ MUS-W */
     .mus-header {
-        background-color: #f00a0a;
+        background-color: #0b30e6;
         color: white !important;
         text-align: center;
         padding: 10px;
