@@ -139,7 +139,7 @@ if check_password():
             
             if st.button("ค้นหาข้อมูลล่าสุด", use_container_width=True):
                 if selected_m == "-- กรุณาเลือกเครื่อง --":
-                    st.warning("กรุณาเลือก Machine ก่อนครับ")
+                    st.warning("ไม่มีข้อมูล กรุณากรอกข้อมูลก่อน")
                 else:
                     latest = df[df['Cable_Name'] == selected_m].iloc[-1]
                     spec_info = f" (สเปค: {latest['Cable_Spec']})" if 'Cable_Spec' in latest and pd.notna(latest['Cable_Spec']) else ""
