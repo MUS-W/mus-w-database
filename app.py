@@ -34,13 +34,18 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    div.stButton > button, div.stFormSubmitButton > button {
+    /* 💡 แก้ตรงนี้: เพิ่ม div.stDownloadButton > button เข้าไปให้เป็นสีแดง MUS-W ด้วย */
+    div.stButton > button, div.stFormSubmitButton > button, div.stDownloadButton > button {
         background-color: #f00a0a !important;
         color: white !important;
         border-radius: 8px !important;
         border: none !important;
         height: 50px !important;
         font-size: 18px !important;
+    }
+    div.stButton > button:hover, div.stFormSubmitButton > button:hover, div.stDownloadButton > button:hover {
+        background-color: #f00a0a !important;
+        color: white !important;
     }
 
     .stTextInput input, .stDateInput input {
@@ -69,7 +74,7 @@ st.markdown("""
         color: #000000 !important;
     }
 
-    /* 💡 ซ่อนเมนู Toolbar ดำๆ มุมขวาบนของกราฟให้หายไปเลย */
+    /* ซ่อนเมนู Toolbar ดำๆ มุมขวาบนของกราฟให้หายไปเลย */
     [data-testid="stElementToolbar"] {
         display: none !important;
         visibility: hidden !important;
