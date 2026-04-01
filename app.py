@@ -179,7 +179,18 @@ if check_password():
                     mins = [f"{i:02d}" for i in range(60)]
                     m = st.selectbox("นาที", mins, index=0)
                 
-                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("""
+                <style>
+                    /* บอกมือถือให้ใช้รูปนี้เป็นไอคอน */
+                    <link rel="apple-touch-icon" href="https://drive.google.com/file/d/1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG/view?usp=sharing">
+                    <link rel="icon" type="image/png" href="https://drive.google.com/file/d/1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG/view?usp=sharing">
+    
+                    /* โค้ด CSS เดิมของคุณทั้งหมด ห้ามลบ! */
+                    .stApp { background-color: #E5E5E5; }
+                    ...
+                </style>
+                """, unsafe_allow_html=True)
+
                 
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
                     if not c_name or c_name == "ไม่มีข้อมูล" or c_name == "-- กรุณาเลือกสาย --":
