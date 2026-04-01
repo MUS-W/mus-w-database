@@ -114,6 +114,7 @@ def check_password():
                     st.error("รหัสผ่านไม่ถูกต้อง!")
     return False
 
+# ================= 3. เชื่อมต่อฐานข้อมูลและเริ่มตัวแอป =================
 if check_password():
     conn = st.connection("gsheets", type=GSheetsConnection)
     
@@ -122,7 +123,6 @@ if check_password():
 
     st.markdown('<div class="mus-header">MUS-W</div>', unsafe_allow_html=True)
     main_tab, tab_other1, tab_other2 = st.tabs(["Kickless", "Welding Transformer", "Other"])
-
     with main_tab:
         sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🔍 ค้นหาข้อมูล", "⚙️ จัดการข้อมูล/อัพเดท", "📊 ภาพรวม"])
 
@@ -237,4 +237,5 @@ if check_password():
             else:
                 st.info("ยังไม่มีข้อมูลในระบบ")
 
-    with tab_other1:
+    with tab_other1: st.info("Coming Soon")
+    with tab_other2: st.info("Coming Soon")
