@@ -40,7 +40,7 @@ st.markdown("""
     }
     div.stButton > button:hover, div.stFormSubmitButton > button:hover, div.stDownloadButton > button:hover {
         background-color: #f00a0a !important;
-        color: white !important;
+        color: #ffffff !important;
     }
 
     .stTextInput input, .stDateInput input {
