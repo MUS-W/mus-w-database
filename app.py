@@ -121,8 +121,9 @@ if check_password():
             df = get_data()
             cable_list = df['Cable_Name'].unique().tolist() if not df.empty else []
             
-            # ยุบเหลือช่องเดียว ทั้งค้นหาและกดเลือกได้
-            selected = st.selectbox("เลือกรหัสสาย Kickless (พิมพ์ค้นหาได้)", ["-- กรุณาเลือกสาย --"] + cable_list)
+            # 💡 หลอกระบบมือถือด้วย Multiselect แบบจำกัด 1 ตัว คีย์บอร์ดจะเด้ง 100% แน่นอน
+            selected_list = st.multiselect("เลือกรหัสสาย Kickless (พิมพ์ค้นหาได้)", options=cable_list, max_selections=1, placeholder="-- กรุณาเลือกสาย --")
+            selected = selected_list[0] if selected_list else "-- กรุณาเลือกสาย --"
             
             if st.button("ค้นหาข้อมูลล่าสุด", use_container_width=True):
                 if selected == "-- กรุณาเลือกสาย --":
@@ -143,8 +144,9 @@ if check_password():
             if mode == "ลงข้อมูลสายใหม่":
                 c_name = st.text_input("ชื่อ/รหัส สาย Kickless เส้นใหม่:")
             else:
-                # ยุบเหลือช่องเดียว ทั้งค้นหาและกดเลือกได้
-                c_name = st.selectbox("เลือกสายเดิม (พิมพ์ค้นหาได้):", cable_list if cable_list else ["ไม่มีข้อมูล"])
+                # 💡 ใช้เทคนิคเดียวกันในหน้าอัพเดท
+                c_name_list = st.multiselect("เลือกสายเดิม (พิมพ์ค้นหาได้):", options=cable_list if cable_list else ["ไม่มีข้อมูล"], max_selections=1, placeholder="-- กรุณาเลือกสาย --")
+                c_name = c_name_list[0] if c_name_list else "-- กรุณาเลือกสาย --"
             
             with st.form("input_form", clear_on_submit=True):
                 st.markdown("**กำหนดวันที่และเวลา:**")
