@@ -3,9 +3,18 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
 # ================= 1. ตั้งค่าหน้าจอและดีไซน์ (CSS) =================
-st.set_page_config(page_title="MUS-W Dashboard", layout="centered")
+# 💡 แก้จุดที่ 1: ใส่ page_icon ตรงนี้เพื่อให้ไอคอนขึ้นบนแท็บเบราว์เซอร์ด้วย
+st.set_page_config(
+    page_title="MUS-W Dashboard", 
+    layout="centered",
+    page_icon="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG"
+)
 
+# 💡 แก้จุดที่ 2: วางโค้ดไอคอนมือถือไว้บนสุด และแยก HTML ออกจาก <style>
 st.markdown("""
+<link rel="apple-touch-icon" href="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG">
+<link rel="icon" type="image/png" href="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG">
+
 <style>
     /* พื้นหลังแอป */
     .stApp { background-color: #E5E5E5; }
@@ -178,19 +187,6 @@ if check_password():
                 with col_m:
                     mins = [f"{i:02d}" for i in range(60)]
                     m = st.selectbox("นาที", mins, index=0)
-                
-                st.markdown("""
-                <style>
-                    /* บอกมือถือให้ใช้รูปนี้เป็นไอคอน */
-                    <link rel="apple-touch-icon" href="https://drive.google.com/file/d/1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG/view?usp=sharing">
-                    <link rel="icon" type="image/png" href="https://drive.google.com/file/d/1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG/view?usp=sharing">
-    
-                    /* โค้ด CSS เดิมของคุณทั้งหมด ห้ามลบ! */
-                    .stApp { background-color: #E5E5E5; }
-                    ...
-                </style>
-                """, unsafe_allow_html=True)
-
                 
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
                     if not c_name or c_name == "ไม่มีข้อมูล" or c_name == "-- กรุณาเลือกสาย --":
