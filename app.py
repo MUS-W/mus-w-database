@@ -31,7 +31,7 @@ st.markdown("""
 
     /* แต่งปุ่มกดทั้งหมด (ปุ่มล็อกอิน, ค้นหา, บันทึกข้อมูล) ให้เป็นสีแดง MUS-W */
     div.stButton > button, div.stFormSubmitButton > button {
-        background-color: #C00000 !important;
+        background-color: #f00a0a !important;
         color: white !important;
         border-radius: 8px !important;
         border: none !important;
@@ -40,7 +40,7 @@ st.markdown("""
         font-weight: bold !important;
     }
     div.stButton > button:hover, div.stFormSubmitButton > button:hover {
-        background-color: #990000 !important;
+        background-color: #f00a0a !important;
         color: white !important;
     }
 
@@ -58,7 +58,7 @@ st.markdown("""
     /* สีของรายการเวลาคลิก Dropdown ลงมา */
     ul[role="listbox"] li {
         color: #000000 !important;
-        background-color: #FFFFFF !important;
+        background-color: #F0F0F0 !important;
     }
 
     /* กล่องแสดงผลลัพธ์ */
@@ -86,7 +86,7 @@ def check_password():
     if st.session_state.authenticated:
         return True
     
-    st.markdown('<div class="mus-header">MUS-W LOGIN</div>', unsafe_allow_html=True)
+    st.markdown('<div class="mus-header">LOGIN</div>', unsafe_allow_html=True)
     with st.container():
         st.write("---")
         pwd = st.text_input("กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน:", type="password")
@@ -111,10 +111,10 @@ if check_password():
     # ส่วนหัวแอปหลังล็อกอิน
     st.markdown('<div class="mus-header">MUS-W</div>', unsafe_allow_html=True)
 
-    main_tab, tab_other1, tab_other2 = st.tabs(["🗲 Kickless", "Welding Transformer", "Other"])
+    main_tab, tab_other1, tab_other2 = st.tabs(["Kickless", "Welding Transformer", "Other"])
 
     with main_tab:
-        sub_tab1, sub_tab2 = st.tabs(["🔍 ค้นหาข้อมูล", "⚙️ จัดการข้อมูล/อัพเดท"])
+        sub_tab1, sub_tab2 = st.tabs(["ค้นหาข้อมูล", "จัดการข้อมูล/อัพเดท"])
 
         # -------- หน้าค้นหา --------
         with sub_tab1:
