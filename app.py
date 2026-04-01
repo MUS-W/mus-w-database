@@ -10,21 +10,11 @@ st.set_page_config(
 )
 
 st.markdown("""
-<link rel="apple-touch-icon" sizes="180x180" href="https://drive.google.com/uc?id=1X1y3I9VpW6-oE6p1K9rVv0lT_4-Nf6p-&v=3">
-<link rel="icon" type="image/png" sizes="32x32" href="https://drive.google.com/uc?id=1X1y3I9VpW6-oE6p1K9rVv0lT_4-Nf6p-&v=3">
-<link rel="icon" type="image/png" sizes="16x16" href="https://drive.google.com/uc?id=1X1y3I9VpW6-oE6p1K9rVv0lT_4-Nf6p-&v=3">
-
 <style>
-    /* พื้นหลังแอป */
     .stApp { background-color: #E5E5E5; }
     header { visibility: hidden; }
+    .stApp, .stApp p, .stApp span, .stApp label, .stRadio label { color: #000000 !important; }
 
-    /* บังคับตัวหนังสือทั่วไปให้เป็นสีดำ */
-    .stApp, .stApp p, .stApp span, .stApp label, .stRadio label {
-        color: #000000 !important;
-    }
-
-    /* หัวข้อ MUS-W */
     .mus-header {
         background-color: #f00a0a;
         color: white !important;
@@ -37,7 +27,6 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* แต่งปุ่มกดทั้งหมด (ปุ่มล็อกอิน, ค้นหา, บันทึกข้อมูล) ให้เป็นสีแดง MUS-W */
     div.stButton > button, div.stFormSubmitButton > button {
         background-color: #f00a0a !important;
         color: white !important;
@@ -46,29 +35,19 @@ st.markdown("""
         height: 50px !important;
         font-size: 18px !important;
     }
-    div.stButton > button:hover, div.stFormSubmitButton > button:hover {
-        background-color: #f00a0a !important;
-        color: white !important;
-    }
 
-    /* กล่อง Input และ Dropdown (บังคับพื้นสีเทาอ่อน ตัวอักษรสีดำ) */
     .stTextInput input, .stDateInput input {
         background-color: #F0F0F0 !important;
         color: #000000 !important;
         border: 1px solid #CCCCCC !important;
     }
+    
     div[data-baseweb="select"] > div {
         background-color: #F0F0F0 !important;
         color: #000000 !important;
         border: 1px solid #CCCCCC !important;
     }
-    /* สีของรายการเวลาคลิก Dropdown ลงมา */
-    ul[role="listbox"] li {
-        color: #F0F0F0 !important;
-        background-color: #F0F0F0 !important;
-    }
 
-    /* กล่องแสดงผลลัพธ์ */
     .result-box {
         background-color: #D9D9D9;
         text-align: center;
@@ -109,36 +88,26 @@ def check_password():
     return False
 
 if check_password():
-    # ================= 3. เชื่อมต่อ Google Sheets =================
     conn = st.connection("gsheets", type=GSheetsConnection)
     
     def get_data():
         return conn.read(worksheet="Kickless", ttl="1s")
 
-    # ส่วนหัวแอปหลังล็อกอิน
     st.markdown('<div class="mus-header">MUS-W</div>', unsafe_allow_html=True)
-
     main_tab, tab_other1, tab_other2 = st.tabs(["Kickless", "Welding Transformer", "Other"])
 
     with main_tab:
-        # 💡 เพิ่มแท็บ "ภาพรวม" เข้ามาเป็นแท็บที่ 3
-        sub_tab1, sub_tab2, sub_tab3 = st.tabs(["ค้นหาข้อมูล", "จัดการข้อมูล/อัพเดท", "ภาพรวม"])
+        sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🔍 ค้นหาข้อมูล", "⚙️ จัดการข้อมูล/อัพเดท", "📊 ภาพรวม"])
 
-        # -------- แท็บ 1: หน้าค้นหา --------
+        # -------- แท็บ 1: ค้นหา --------
         with sub_tab1:
             df = get_data()
             cable_list = df['Cable_Name'].unique().tolist() if not df.empty else []
-            
             search_kw1 = st.text_input("🔍 พิมพ์รหัสสายเพื่อค้นหา:", key="search1")
             filtered_list1 = [c for c in cable_list if str(search_kw1).lower().strip() in str(c).lower()] if search_kw1 else cable_list
-            
             default_idx1 = 1 if (search_kw1 and len(filtered_list1) > 0) else 0
             
-            selected = st.selectbox(
-                "เลือกรหัสสาย Kickless จากรายการ", 
-                ["-- กรุณาเลือกสาย --"] + filtered_list1,
-                index=default_idx1
-            )
+            selected = st.selectbox("เลือกรหัสสาย Kickless จากรายการ", ["-- กรุณาเลือกสาย --"] + filtered_list1, index=default_idx1)
             
             if st.button("ค้นหาข้อมูลล่าสุด", use_container_width=True):
                 if selected == "-- กรุณาเลือกสาย --":
@@ -152,7 +121,7 @@ if check_password():
                     </div>
                     """, unsafe_allow_html=True)
 
-        # -------- แท็บ 2: หน้าจัดการข้อมูล --------
+        # -------- แท็บ 2: จัดการข้อมูล (แก้บั๊กแป้นพิมพ์เด้ง) --------
         with sub_tab2:
             mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
             
@@ -161,65 +130,55 @@ if check_password():
             else:
                 search_kw2 = st.text_input("🔍 พิมพ์รหัสสายเดิมเพื่อค้นหา:", key="search2")
                 filtered_list2 = [c for c in cable_list if str(search_kw2).lower().strip() in str(c).lower()] if search_kw2 else cable_list
-                
                 default_idx2 = 1 if (search_kw2 and len(filtered_list2) > 0) else 0
-                options2 = ["-- กรุณาเลือกสาย --"] + filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"]
-                
-                c_name = st.selectbox(
-                    "เลือกสายเดิมจากรายการ:", 
-                    options2,
-                    index=default_idx2 if filtered_list2 else 0
-                )
+                c_name = st.selectbox("เลือกสายเดิมจากรายการ:", ["-- กรุณาเลือกสาย --"] + filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"], index=default_idx2 if filtered_list2 else 0)
             
             with st.form("input_form", clear_on_submit=True):
-                st.markdown("**กำหนดวันที่และเวลา:**")
-                col_d, col_h, col_m = st.columns([2, 1, 1])
+                st.markdown("**📅 กำหนดวันที่และเวลา (เลื่อนแถบเพื่อเลือกเวลา แป้นพิมพ์จะไม่เด้งครับ):**")
+                d = st.date_input("เลือกวันที่")
                 
-                with col_d:
-                    d = st.date_input("วันที่")
-                with col_h:
-                    hours = [f"{i:02d}" for i in range(24)]
-                    h = st.selectbox("ชั่วโมง", hours, index=12)
-                with col_m:
-                    mins = [f"{i:02d}" for i in range(60)]
-                    m = st.selectbox("นาที", mins, index=0)
+                # 💡 เปลี่ยนเป็น Slider เพื่อป้องกันแป้นพิมพ์เด้งบน iPad/มือถือ
+                h = st.select_slider("เลือกชั่วโมง (นาฬิกา)", options=[f"{i:02d}" for i in range(24)], value="12")
+                m = st.select_slider("เลือกนาที", options=[f"{i:02d}" for i in range(60)], value="00")
                 
+                st.markdown("<br>", unsafe_allow_html=True)
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
-                    if not c_name or c_name == "ไม่มีข้อมูล" or c_name == "-- กรุณาเลือกสาย --":
-                        st.error("ข้อมูลไม่ครบ กรุณาตรวจสอบอีกครั้ง!")
+                    if not c_name or c_name in ["ไม่มีข้อมูล", "-- กรุณาเลือกสาย --"]:
+                        st.error("ข้อมูลไม่ครบ!")
                     else:
                         dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
                         new_data = pd.DataFrame([{"Cable_Name": c_name, "Last_Changed_Date": dt_str}])
-                        
                         updated_df = pd.concat([get_data(), new_data], ignore_index=True)
                         conn.update(worksheet="Kickless", data=updated_df)
-                        # เปลี่ยนแจ้งเตือนให้เด้งเป็น Toast น่ารักๆ ไม่เกะกะจอ
-                        st.toast("บันทึกข้อมูลลง Google Sheets เรียบร้อย! ✅")
+                        st.toast("บันทึกข้อมูลเรียบร้อย! ✅")
                         st.cache_data.clear()
 
-        # -------- แท็บ 3: หน้าภาพรวม (Dashboard) --------
+        # -------- แท็บ 3: ภาพรวม ( Dashboard อ่านง่าย) --------
         with sub_tab3:
-            st.markdown("### 📊 สถิติการเปลี่ยนสายแยกตามเดือน")
+            st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน")
             df_chart = get_data().copy()
             
             if not df_chart.empty:
-                # แปลงคอลัมน์วันที่แบบ Text ให้เป็นระบบเวลา (Datetime) เพื่อใช้จัดกลุ่ม
                 df_chart['Date'] = pd.to_datetime(df_chart['Last_Changed_Date'], format='%d-%m-%Y %H.%M', errors='coerce')
                 df_chart = df_chart.dropna(subset=['Date'])
                 
                 if not df_chart.empty:
-                    # สร้างคอลัมน์ เดือน-ปี (เช่น 2026-04)
-                    df_chart['Month'] = df_chart['Date'].dt.strftime('%Y-%m')
+                    df_chart['Month'] = df_chart['Date'].dt.strftime('%m-%Y') # จัดกลุ่มเป็น เดือน-ปี
                     
-                    # นับจำนวนการเปลี่ยนสายแต่ละเส้น ในแต่ละเดือน
+                    # 1. กราฟแท่ง
                     chart_data = df_chart.groupby(['Month', 'Cable_Name']).size().unstack(fill_value=0)
-                    
-                    # พล็อตกราฟแท่ง
                     st.bar_chart(chart_data)
+                    
+                    # 2. ตารางสรุป (ดูง่ายกว่ากราฟ)
+                    st.markdown("**📝 รายละเอียดจำนวนที่เปลี่ยน (เส้น):**")
+                    summary_table = df_chart.groupby(['Month', 'Cable_Name']).size().reset_index(name='จำนวนที่เปลี่ยน')
+                    # เปลี่ยนให้ Month มาเป็นหัวข้อคอลัมน์เพื่อให้อ่านง่ายขึ้น
+                    pivot_summary = summary_table.pivot(index='Cable_Name', columns='Month', values='จำนวนที่เปลี่ยน').fillna(0).astype(int)
+                    st.dataframe(pivot_summary, use_container_width=True)
                 else:
-                    st.info("ไม่พบข้อมูลวันที่ในรูปแบบที่ถูกต้องสำหรับสร้างกราฟครับ")
+                    st.info("ไม่พบข้อมูลวันที่ครับ")
             else:
-                st.info("ยังไม่มีข้อมูลในระบบครับ")
+                st.info("ยังไม่มีข้อมูลในระบบ")
 
     with tab_other1: st.info("Coming Soon")
     with tab_other2: st.info("Coming Soon")
