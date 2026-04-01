@@ -3,22 +3,23 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 
 # ================= 1. ตั้งค่าหน้าจอและดีไซน์ (CSS) =================
-# 💡 แก้จุดที่ 1: ใส่ page_icon ตรงนี้เพื่อให้ไอคอนขึ้นบนแท็บเบราว์เซอร์ด้วย
 st.set_page_config(
     page_title="MUS-W Dashboard", 
     layout="centered",
-    page_icon="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG"
+    # 💡 เพิ่ม &v=2 ต่อท้ายเพื่อบังคับล้างแคช
+    page_icon="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG&v=2"
 )
 
-# 💡 แก้จุดที่ 2: วางโค้ดไอคอนมือถือไว้บนสุด และแยก HTML ออกจาก <style>
 st.markdown("""
-<link rel="apple-touch-icon" href="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG">
-<link rel="icon" type="image/png" href="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG">
+<link rel="apple-touch-icon" href="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG&v=2">
+<link rel="icon" type="image/png" href="https://drive.google.com/uc?id=1-Mv7ZfX8_8mna_Zw0soYz3TCfBWnItaG&v=2">
 
 <style>
-    /* พื้นหลังแอป */
+    /* โค้ด CSS เดิมของพี่ทั้งหมด (ห้ามแก้ส่วนสีและขนาด) */
     .stApp { background-color: #E5E5E5; }
     header { visibility: hidden; }
+    /* ... (ส่วนที่เหลือเหมือนเดิมเป๊ะ) ... */
+
 
     /* บังคับตัวหนังสือทั่วไปให้เป็นสีดำ */
     .stApp, .stApp p, .stApp span, .stApp label, .stRadio label {
