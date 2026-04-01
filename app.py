@@ -71,6 +71,7 @@ st.markdown("""
 
     [data-testid="stElementToolbar"] { display: none !important; }
 
+        /* 💡 บังคับตาราง HTML ให้เป็นสีขาว/ดำล้วน */
     .white-table {
         background-color: white !important;
         color: black !important;
@@ -86,7 +87,15 @@ st.markdown("""
         text-align: center !important;
         color: black !important;
     }
-    .white-table th { background-color: #f2f2f2 !important; }
+    .white-table th { 
+        background-color: #f2f2f2 !important; 
+        color: black !important;
+    }
+    /* 💡 ไม้ตาย: บังคับทุกอย่างที่อยู่ข้างในตารางนี้ให้เป็นสีดำให้หมด! */
+    .white-table * {
+        color: black !important;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
