@@ -22,9 +22,9 @@ st.markdown("""
         color: white !important;
         text-align: center;
         padding: 15px;
-        font-size: 28px;
+        font-size: 32px;
         font-weight: bold;
-        border-radius: 0 0 15px 15px;
+        border-radius: 15px 15px 15px 15px;
         margin-top: -70px;
         margin-bottom: 20px;
     }
