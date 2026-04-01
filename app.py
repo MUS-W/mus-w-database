@@ -3,6 +3,7 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import altair as alt
 from datetime import datetime
+import time
 
 # ================= 1. ตั้งค่าหน้าจอและดีไซน์ (CSS) =================
 st.set_page_config(
@@ -13,7 +14,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* พื้นหลังแอปสีเทาอ่อนเหมือนเดิม เพื่อให้ตัดกับหัวข้อสีแดงและกราฟสีขาว */
+    /* พื้นหลังแอปสีเทาอ่อน */
     .stApp { background-color: #E5E5E5; }
     header { visibility: hidden; }
     
@@ -66,6 +67,26 @@ st.markdown("""
         font-size: 38px;
         font-weight: bold;
         color: #000000 !important;
+    }
+
+    /* 💡 บังคับตาราง HTML ให้เป็นสีขาว/ดำล้วน */
+    .white-table {
+        background-color: white !important;
+        color: black !important;
+        border-collapse: collapse;
+        width: 100%;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+    .white-table th, .white-table td {
+        border: 1px solid #ddd !important;
+        padding: 8px !important;
+        text-align: center !important;
+    }
+    .white-table th {
+        background-color: #f2f2f2 !important;
+        font-weight: bold;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -143,10 +164,10 @@ if check_password():
             with st.form("input_form", clear_on_submit=True):
                 st.markdown("**📅 กำหนดวันที่และเวลา:**")
                 
-                # 💡 แก้จุดที่ 1: เปลี่ยนกลับมาใช้ปฏิทินแบบเดิมตามคำขอ
+                # ปฏิทินเลือกวันแบบเดิม
                 d = st.date_input("เลือกวันที่")
                 
-                # 💡 แก้จุดที่ 2: คงรูปแบบ Dropdown วงล้อเลือกเวลาไว้ เพราะแป้นพิมพ์ไม่เด้งและพี่โอเค
+                # วงล้อเลือกเวลาแบบเดิม
                 now = datetime.now()
                 col_h, col_m = st.columns(2)
                 with col_h:
@@ -155,18 +176,23 @@ if check_password():
                     m = st.selectbox("นาที", [f"{i:02d}" for i in range(60)], index=now.minute)
                 
                 st.markdown("<br>", unsafe_allow_html=True)
+                
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
                     if not c_name or c_name in ["ไม่มีข้อมูล", "-- กรุณาเลือกสาย --"]:
                         st.error("ข้อมูลไม่ครบ!")
                     else:
-                        dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
-                        new_data = pd.DataFrame([{"Cable_Name": c_name, "Last_Changed_Date": dt_str}])
-                        updated_df = pd.concat([get_data(), new_data], ignore_index=True)
-                        conn.update(worksheet="Kickless", data=updated_df)
-                        st.toast("บันทึกข้อมูลเรียบร้อย! ✅")
+                        # 💡 ดึง Animation การโหลดกลับมา
+                        with st.spinner('กำลังบันทึกข้อมูล... กรุณารอสักครู่ ⏳'):
+                            dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
+                            new_data = pd.DataFrame([{"Cable_Name": c_name, "Last_Changed_Date": dt_str}])
+                            updated_df = pd.concat([get_data(), new_data], ignore_index=True)
+                            conn.update(worksheet="Kickless", data=updated_df)
+                            time.sleep(1) # หน่วงเวลาให้เห็น animation นิดนึง
+                            
+                        st.toast("บันทึกข้อมูลลงระบบเรียบร้อย! ✅")
                         st.cache_data.clear()
 
-        # -------- แท็บ 3: ภาพรวม ( Dashboard อ่านง่ายสุดๆ) --------
+        # -------- แท็บ 3: ภาพรวม --------
         with sub_tab3:
             st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน (แยกรายเส้น)")
             df_chart = get_data().copy()
@@ -180,34 +206,35 @@ if check_password():
                     
                     summary_table = df_chart.groupby(['Month', 'Cable_Name']).size().reset_index(name='จำนวนที่เปลี่ยน')
                     
-                    # 💡 แก้จุดที่ 3: บังคับให้เฉพาะตัวกราฟเป็นสีขาวสว่างๆ ไม่สนโหมดมืดของ iPad
+                    # กราฟแท่งสีขาว
                     bar_chart = alt.Chart(summary_table).mark_bar().encode(
                         x=alt.X('Month:N', title='เดือน-ปี', axis=alt.Axis(labelAngle=0, labelColor='black', titleColor='black')),
                         y=alt.Y('จำนวนที่เปลี่ยน:Q', title='จำนวนที่เปลี่ยน (ครั้ง)', axis=alt.Axis(tickMinStep=1, labelColor='black', titleColor='black')),
                         color=alt.Color('Cable_Name:N', title='รหัสสาย'),
-                        xOffset='Cable_Name:N' # ทำให้แท่งกราฟแยกกันในแต่ละเดือน
+                        xOffset='Cable_Name:N' 
                     ).properties(
                         height=350,
-                        # 💡 พระเอกของงาน: บังคับพื้นหลังกราฟเป็นสีขาว ⚪
                         background='white'
                     ).configure_view(
-                        strokeWidth=0 # ลบเส้นขอบเพื่อความคลีน
+                        strokeWidth=0
                     ).configure_legend(
                         titleColor='black',
                         labelColor='black'
                     )
                     
-                    # 💡 พระเอกของงาน: ล้างธีมทั้งหมดออก เพื่อไม่ให้ Streamlit ธีมมืดมาตีกับกราฟขาวของเรา
                     st.altair_chart(bar_chart, use_container_width=True, theme=None)
                     
-                    # 2. ตารางสรุป 
+                    # 💡 ตาราง HTML สีขาวสะอาดตา 
                     st.markdown("**📝 รายละเอียดจำนวนที่เปลี่ยน (เส้น):**")
                     pivot_summary = summary_table.pivot(index='Cable_Name', columns='Month', values='จำนวนที่เปลี่ยน').fillna(0).astype(int)
-                    st.dataframe(pivot_summary, use_container_width=True)
+                    
+                    # แปลง DataFrame เป็น HTML แล้วยัดใส่คลาส white-table ที่เราเขียนไว้ด้านบน
+                    html_table = pivot_summary.to_html(classes='white-table')
+                    st.markdown(html_table, unsafe_allow_html=True)
+
                 else:
                     st.info("ไม่พบข้อมูลวันที่ครับ")
             else:
                 st.info("ยังไม่มีข้อมูลในระบบ")
 
-    with tab_other1: st.info("Coming Soon")
-    with tab_other2: st.info("Coming Soon")
+    with tab_other1:
