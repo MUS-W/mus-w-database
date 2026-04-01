@@ -121,11 +121,8 @@ if check_password():
             df = get_data()
             cable_list = df['Cable_Name'].unique().tolist() if not df.empty else []
             
-            # 💡 เพิ่มช่องพิมพ์ค้นหาแยกเพื่อแก้ปัญหา iPad แป้นไม่ขึ้น
-            search_kw1 = st.text_input("🔍 พิมพ์รหัสสายเพื่อค้นหา:", key="search1")
-            filtered_list1 = [c for c in cable_list if search_kw1.lower() in str(c).lower()] if search_kw1 else cable_list
-            
-            selected = st.selectbox("เลือกรหัสสายจากรายการ:", ["-- กรุณาเลือกสาย --"] + filtered_list1)
+            # ยุบเหลือช่องเดียว ทั้งค้นหาและกดเลือกได้
+            selected = st.selectbox("เลือกรหัสสาย Kickless (พิมพ์ค้นหาได้)", ["-- กรุณาเลือกสาย --"] + cable_list)
             
             if st.button("ค้นหาข้อมูลล่าสุด", use_container_width=True):
                 if selected == "-- กรุณาเลือกสาย --":
@@ -143,13 +140,11 @@ if check_password():
         with sub_tab2:
             mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
             
-            # 💡 ดึงระบบค้นหาออกมานอก Form เพื่อให้ทำงานแบบ Real-time บนมือถือได้
             if mode == "ลงข้อมูลสายใหม่":
                 c_name = st.text_input("ชื่อ/รหัส สาย Kickless เส้นใหม่:")
             else:
-                search_kw2 = st.text_input("🔍 พิมพ์รหัสสายเดิมเพื่อค้นหา:", key="search2")
-                filtered_list2 = [c for c in cable_list if search_kw2.lower() in str(c).lower()] if search_kw2 else cable_list
-                c_name = st.selectbox("เลือกรหัสสายจากรายการ:", filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"])
+                # ยุบเหลือช่องเดียว ทั้งค้นหาและกดเลือกได้
+                c_name = st.selectbox("เลือกสายเดิม (พิมพ์ค้นหาได้):", cable_list if cable_list else ["ไม่มีข้อมูล"])
             
             with st.form("input_form", clear_on_submit=True):
                 st.markdown("**กำหนดวันที่และเวลา:**")
