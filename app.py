@@ -38,10 +38,6 @@ st.markdown("""
         height: 50px !important;
         font-size: 18px !important;
     }
-    div.stButton > button:hover, div.stFormSubmitButton > button:hover, div.stDownloadButton > button:hover {
-        background-color: #f00a0a !important;
-        color: #ffffff !important;
-    }
 
     .stTextInput input, .stDateInput input {
         background-color: #F0F0F0 !important;
@@ -63,39 +59,24 @@ st.markdown("""
         border: 1px solid #CCCCCC;
         margin-top: 15px;
     }
-    .result-date {
-        font-size: 38px;
-        font-weight: bold;
-        color: #000000 !important;
-    }
 
     [data-testid="stElementToolbar"] { display: none !important; }
     
-    /* 💡 ไม้ตายขั้นสุด: ล็อกทุกอย่างในตารางให้เป็นสีดำ 100% */
+    /* 💡 ไม้ตายล็อกสีตัวอักษรในตารางให้เป็นสีดำ 100% */
     .white-table {
         background-color: white !important;
         border-collapse: collapse !important;
         width: 100% !important;
-        margin-top: 10px !important;
     }
-    
-    /* สั่งเหมาเข่ง! ไม่ว่าข้างในตารางจะเป็น tag อะไร ต้องเป็นสีดำทั้งหมด */
-    .white-table, .white-table th, .white-table td, .white-table tr, .white-table tbody, .white-table thead, .white-table * {
+    .white-table, .white-table th, .white-table td, .white-table tr, .white-table * {
         color: #000000 !important; 
     }
-    
     .white-table th, .white-table td {
-        background-color: white !important;
         border: 1px solid #CCCCCC !important;
         padding: 10px !important;
         text-align: center !important;
-        font-size: 16px !important;
     }
-    
-    .white-table th {
-        background-color: #f2f2f2 !important;
-        font-weight: bold !important;
-    }
+    .white-table th { background-color: #f2f2f2 !important; font-weight: bold !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -108,14 +89,11 @@ def check_password():
     with st.container():
         st.write("---")
         pwd = st.text_input("กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน:", type="password")
-        col1, col2, col3 = st.columns([1, 1, 1])
-        with col2:
-            if st.button("เข้าสู่ระบบ", use_container_width=True):
-                if pwd == "musw1234":
-                    st.session_state.authenticated = True
-                    st.rerun()
-                else:
-                    st.error("รหัสผ่านไม่ถูกต้อง!")
+        if st.button("เข้าสู่ระบบ", use_container_width=True):
+            if pwd == "musw1234":
+                st.session_state.authenticated = True
+                st.rerun()
+            else: st.error("รหัสผ่านไม่ถูกต้อง!")
     return False
 
 if check_password():
@@ -126,129 +104,79 @@ if check_password():
     with main_tab:
         sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🔍 ค้นหาข้อมูล", "⚙️ จัดการข้อมูล/อัพเดท", "📊 ภาพรวม"])
 
-        # -------- แท็บ 1: ค้นหา (ค้นหาด้วยชื่อ Machine) --------
+        # -------- แท็บ 1: ค้นหา (ค้นหาด้วยชื่อ Machine เต็มเหมือนเดิม) --------
         with sub_tab1:
             df = get_data()
             machine_list = df['Cable_Name'].unique().tolist() if not df.empty else []
-            
-            search_kw1 = st.text_input("🔍 พิมพ์ชื่อ Machine เพื่อค้นหา:", key="search1")
-            filtered_list1 = [m for m in machine_list if str(search_kw1).lower().strip() in str(m).lower()] if search_kw1 else machine_list
-            default_idx1 = 1 if (search_kw1 and len(filtered_list1) > 0) else 0
-            
-            selected_m = st.selectbox("เลือกชื่อ Machine จากรายการ", ["-- กรุณาเลือกเครื่อง --"] + filtered_list1, index=default_idx1)
+            search_kw = st.text_input("🔍 พิมพ์ชื่อ Machine (เช่น M1G1) เพื่อค้นหา:", key="search1")
+            filtered = [m for m in machine_list if str(search_kw).lower().strip() in str(m).lower()] if search_kw else machine_list
+            selected_m = st.selectbox("เลือก Machine จากรายการ", ["-- กรุณาเลือกเครื่อง --"] + filtered, index=1 if (search_kw and filtered) else 0)
             
             if st.button("ค้นหาข้อมูลล่าสุด", use_container_width=True):
-                if selected_m == "-- กรุณาเลือกเครื่อง --":
-                    st.warning("ไม่มีข้อมูล กรุณากรอกข้อมูลก่อน")
-                else:
+                if selected_m != "-- กรุณาเลือกเครื่อง --":
                     latest = df[df['Cable_Name'] == selected_m].iloc[-1]
-                    spec_info = f" (สเปค: {latest['Cable_Spec']})" if 'Cable_Spec' in latest and pd.notna(latest['Cable_Spec']) else ""
-                    st.markdown(f"""
-                    <div class="result-box">
-                        <div style="color:#333; font-weight:bold;">-- วันที่เปลี่ยนสายล่าสุด {spec_info} --</div>
-                        <div class="result-date">{latest['Last_Changed_Date']}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    spec = f" (สเปค: {latest['Cable_Spec']})" if 'Cable_Spec' in latest else ""
+                    st.markdown(f'<div class="result-box"><div style="color:#333;">-- วันที่เปลี่ยนสายล่าสุด {spec} --</div><div class="result-date" style="font-size:38px; font-weight:bold; color:black;">{latest["Last_Changed_Date"]}</div></div>', unsafe_allow_html=True)
 
-               # -------- แท็บ 2: จัดการข้อมูล (Machine Input + Spec Dropdown) --------
+        # -------- แท็บ 2: จัดการข้อมูล (กล่องเลือก 3 ส่วน) --------
         with sub_tab2:
             mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
             
-            spec_options = [
-                "150 sq.mm * 2.4 m",
-                "150 sq.mm * 3.0 m",
-                "200 sq.mm * 2.4 m",
-                "200 sq.mm * 3.0 m",
-                "N/A"
-            ]
-
-            if mode == "ลงข้อมูลสายใหม่":
-                m_name = st.text_input("พิมพ์ชื่อ Machine ใหม่:")
-            else:
-                search_kw2 = st.text_input("🔍 พิมพ์ชื่อ Machine เดิมเพื่อค้นหา:", key="search2")
-                filtered_list2 = [m for m in machine_list if str(search_kw2).lower().strip() in str(m).lower()] if search_kw2 else machine_list
-                default_idx2 = 1 if (search_kw2 and len(filtered_list2) > 0) else 0
-                m_name = st.selectbox("เลือกชื่อ Machine เดิม:", ["-- กรุณาเลือกเครื่อง --"] + filtered_list2 if filtered_list2 else ["ไม่มีข้อมูล"], index=default_idx2 if filtered_list2 else 0)
+            st.markdown("**⚙️ ระบุชื่อ Machine:**")
+            col_m1, col_m2, col_m3 = st.columns([1, 2, 1])
+            with col_m1: m_prefix = st.selectbox("ประเภท", ["M", "U", "D", "A"])
+            with col_m2: m_number = st.text_input("ตัวเลข", placeholder="เช่น 1, 2, 10")
+            with col_m3: m_group = st.selectbox("กลุ่ม", ["G1", "G2"])
             
-            # เพิ่ม Dropdown เลือกสเปคสาย
-            c_spec = st.selectbox("เลือกสเปคสาย Kickless:", spec_options)
+            # รวมร่างชื่อ Machine
+            m_full_name = f"{m_prefix}{m_number}{m_group}"
+            st.info(f"ชื่อ Machine ที่จะบันทึก: **{m_full_name}**")
+
+            c_spec = st.selectbox("เลือกสเปคสาย:", ["150 sq.mm * 2.4 m", "150 sq.mm * 3.0 m", "200 sq.mm * 2.4 m", "200 sq.mm * 3.0 m", "N/A"])
 
             with st.form("input_form", clear_on_submit=True):
-                st.markdown("**📅 กำหนดวันที่และเวลา:**")
+                st.markdown("**📅 กำหนดวันที่และเวลา (ใส่ N/A ได้):**")
                 d = st.date_input("เลือกวันที่")
-                
                 now = datetime.now()
                 col_h, col_m = st.columns(2)
-                with col_h:
-                    # 💡 เพิ่มตัวเลือก N/A ไว้บนสุด และบวก index +1 เพื่อให้ค่าเริ่มต้นยังชี้ที่เวลาปัจจุบัน
-                    h = st.selectbox("ชั่วโมง", ["N/A"] + [f"{i:02d}" for i in range(24)], index=now.hour + 1)
-                with col_m:
-                    m = st.selectbox("นาที", ["N/A"] + [f"{i:02d}" for i in range(60)], index=now.minute + 1)
+                with col_h: h = st.selectbox("ชั่วโมง", ["N/A"] + [f"{i:02d}" for i in range(24)], index=now.hour + 1)
+                with col_m: m = st.selectbox("นาที", ["N/A"] + [f"{i:02d}" for i in range(60)], index=now.minute + 1)
                 
                 if st.form_submit_button("บันทึกข้อมูล", use_container_width=True):
-                    if not m_name or m_name in ["ไม่มีข้อมูล", "-- กรุณาเลือกเครื่อง --"]:
-                        st.error("กรุณาระบุชื่อ Machine!")
+                    if not m_number:
+                        st.error("กรุณาใส่ตัวเลขชื่อ Machine!")
                     else:
-                        with st.spinner('กำลังบันทึกข้อมูล...'):
-                            # 💡 ถ้าช่างเลือก N/A อันใดอันหนึ่ง ให้เซฟข้อความว่า N/A แทนเวลาไปเลย
-                            if h == "N/A" or m == "N/A":
-                                dt_str = f"{d.strftime('%d-%m-%Y')} N/A"
-                            else:
-                                dt_str = f"{d.strftime('%d-%m-%Y')} {h}.{m}"
-                                
-                            new_row = {"Cable_Name": m_name, "Cable_Spec": c_spec, "Last_Changed_Date": dt_str}
-                            updated_df = pd.concat([get_data(), pd.DataFrame([new_row])], ignore_index=True)
-                            conn.update(worksheet="Kickless", data=updated_df)
+                        with st.spinner('กำลังบันทึก...'):
+                            dt_str = f"{d.strftime('%d-%m-%Y')} N/A" if (h=="N/A" or m=="N/A") else f"{d.strftime('%d-%m-%Y')} {h}.{m}"
+                            new_row = pd.DataFrame([{"Cable_Name": m_full_name, "Cable_Spec": c_spec, "Last_Changed_Date": dt_str}])
+                            conn.update(worksheet="Kickless", data=pd.concat([get_data(), new_row], ignore_index=True))
                             time.sleep(1)
-                        st.toast("บันทึกข้อมูล Machine: " + m_name + " เรียบร้อย! ✅")
+                        st.toast(f"บันทึกเครื่อง {m_full_name} เรียบร้อย! ✅")
                         st.cache_data.clear()
 
-        # -------- แท็บ 3: ภาพรวม --------
+        # -------- แท็บ 3: ภาพรวม (ล็อกสีดำทุกจุด) --------
         with sub_tab3:
             st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน")
             df_chart = get_data().copy()
-            
             if not df_chart.empty:
-                # 💡 แก้ไขดักทาง: สั่งให้ตัดเฉพาะ "วันที่" (10 ตัวแรก เช่น 24-04-2026) มาคำนวณกราฟ เพื่อไม่ให้พังตอนเจอคำว่า N/A
                 df_chart['Date'] = pd.to_datetime(df_chart['Last_Changed_Date'].astype(str).str[:10], format='%d-%m-%Y', errors='coerce')
                 df_chart = df_chart.dropna(subset=['Date'])
-                
                 if not df_chart.empty:
                     df_chart['Month'] = df_chart['Date'].dt.strftime('%m-%Y') 
                     summary = df_chart.groupby(['Month', 'Cable_Name']).size().reset_index(name='Count')
-                    
                     chart = alt.Chart(summary).mark_bar().encode(
-                        x=alt.X('Month:N', title='เดือน-ปี'),
-                        y=alt.Y('Count:Q', title='จำนวนครั้ง', axis=alt.Axis(tickMinStep=1)),
-                        color=alt.Color('Cable_Name:N', title='Machine'),
-                        xOffset='Cable_Name:N'
-                    ).properties(
-                        height=350, 
-                        background='white'
-                    ).configure_axis(
-                        labelColor='black', 
-                        titleColor='black', 
-                        domainColor='black', 
-                        tickColor='black', 
-                        gridColor='#f0f0f0' 
-                    ).configure_legend(
-                        titleColor='black', 
-                        labelColor='black'  
-                    ).configure_view(
-                        strokeWidth=0
-                    )
+                        x=alt.X('Month:N', title='เดือน-ปี'), y=alt.Y('Count:Q', title='ครั้ง', axis=alt.Axis(tickMinStep=1)),
+                        color=alt.Color('Cable_Name:N', title='Machine'), xOffset='Cable_Name:N'
+                    ).properties(height=350, background='white').configure_axis(labelColor='black', titleColor='black', domainColor='black', tickColor='black', gridColor='#f0f0f0'
+                    ).configure_legend(titleColor='black', labelColor='black').configure_view(strokeWidth=0)
                     
                     st.altair_chart(chart, use_container_width=True, theme=None)
-                    
                     pivot = summary.pivot(index='Cable_Name', columns='Month', values='Count').fillna(0).astype(int)
                     st.markdown(pivot.to_html(classes='white-table'), unsafe_allow_html=True)
-                    
-                    st.markdown("<br>", unsafe_allow_html=True)
                     csv = pivot.to_csv().encode('utf-8-sig')
-                    st.download_button("📥 ดาวน์โหลดข้อมูลสรุป (CSV)", data=csv, file_name="MUS-W_Summary.csv", mime="text/csv", use_container_width=True)
-                else: 
-                    st.info("ไม่พบข้อมูลวันที่ครับ")
-            else: 
-                st.info("ยังไม่มีข้อมูลในระบบ")
+                    st.download_button("📥 ดาวน์โหลดข้อมูลสรุป (CSV)", data=csv, file_name="Summary.csv", mime="text/csv", use_container_width=True)
+                else: st.info("ไม่พบข้อมูลวันที่ครับ")
+            else: st.info("ยังไม่มีข้อมูลในระบบ")
+
     with tab_other1: st.info("Coming Soon")
     with tab_other2: st.info("Coming Soon")
