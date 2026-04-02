@@ -101,10 +101,11 @@ if check_password():
     def get_data(): return conn.read(worksheet="Kickless", ttl="1s")
     st.markdown('<div class="mus-header">MUS-W</div>', unsafe_allow_html=True)
     main_tab, tab_other1, tab_other2 = st.tabs(["Kickless", "Welding Transformer", "Other"])
-    with main_tab:
-        sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🔍 ค้นหาข้อมูล", "⚙️ จัดการข้อมูล/อัพเดท", "📊 ภาพรวม"])
+        with main_tab:
+        # เปลี่ยนชื่อแท็บ 2 ให้ชัดเจนว่าเป็นการลงข้อมูล
+        sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🔍 ค้นหาข้อมูล", "⚙️ ลงข้อมูลเปลี่ยนสาย", "📊 ภาพรวม"])
 
-        # -------- แท็บ 1: ค้นหา (ค้นหาด้วยชื่อ Machine เต็มเหมือนเดิม) --------
+        # -------- แท็บ 1: ค้นหา (ค้นหาด้วยชื่อ Machine เต็ม) --------
         with sub_tab1:
             df = get_data()
             machine_list = df['Cable_Name'].unique().tolist() if not df.empty else []
@@ -118,20 +119,19 @@ if check_password():
                     spec = f" (สเปค: {latest['Cable_Spec']})" if 'Cable_Spec' in latest else ""
                     st.markdown(f'<div class="result-box"><div style="color:#333;">-- วันที่เปลี่ยนสายล่าสุด {spec} --</div><div class="result-date" style="font-size:38px; font-weight:bold; color:black;">{latest["Last_Changed_Date"]}</div></div>', unsafe_allow_html=True)
 
-        # -------- แท็บ 2: จัดการข้อมูล (กล่องเลือก 3 ส่วน) --------
+        # -------- แท็บ 2: ลงข้อมูล (ตัดสวิตช์โหมดออก เหลือแค่ฟอร์มกรอก) --------
         with sub_tab2:
-            mode = st.radio("โหมด:", ["อัพเดทสายเดิม", "ลงข้อมูลสายใหม่"], horizontal=True, label_visibility="collapsed")
-            
             st.markdown("**⚙️ ระบุชื่อ Machine:**")
             col_m1, col_m2, col_m3 = st.columns([1, 2, 1])
-            with col_m1: m_prefix = st.selectbox("Tranformer", ["M", "U", "D", "A", "Z"])
-            with col_m2: m_number = st.text_input("Number", placeholder="เช่น 1, 2, 10")
-            with col_m3: m_group = st.selectbox("Gun", ["G1", "G2"])
+            with col_m1: m_prefix = st.selectbox("ประเภท", ["M", "U", "D", "A"])
+            with col_m2: m_number = st.text_input("ตัวเลข", placeholder="เช่น 1, 2, 10")
+            with col_m3: m_group = st.selectbox("กลุ่ม", ["G1", "G2"])
             
             # รวมร่างชื่อ Machine
             m_full_name = f"{m_prefix}{m_number}{m_group}"
+            st.info(f"ชื่อ Machine ที่จะบันทึก: **{m_full_name}**")
 
-            c_spec = st.selectbox("เลือกสเปคสาย:", ["150 sq.mm * 2.4 m", "150 sq.mm * 3.0 m", "200 sq.mm * 2.4 m", "200 sq.mm * 3.0 m", "N/A"])
+            c_spec = st.selectbox("เลือกสเปคสาย:", ["150 sq.mm * 2.4 m", "150 sq.mm * 3.0 m", "200 sq.mm * 2.4 m", "200 sq.mm * 3.0 m"])
 
             with st.form("input_form", clear_on_submit=True):
                 st.markdown("**📅 กำหนดวันที่และเวลา (ใส่ N/A ได้):**")
@@ -153,7 +153,7 @@ if check_password():
                         st.toast(f"บันทึกเครื่อง {m_full_name} เรียบร้อย! ✅")
                         st.cache_data.clear()
 
-        # -------- แท็บ 3: ภาพรวม (ล็อกสีดำทุกจุด) --------
+        # -------- แท็บ 3: ภาพรวม --------
         with sub_tab3:
             st.markdown("### 📊 สรุปการเปลี่ยนสายรายเดือน")
             df_chart = get_data().copy()
