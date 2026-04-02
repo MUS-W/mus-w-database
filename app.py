@@ -158,7 +158,8 @@ if check_password():
                 "150 sq.mm * 2.4 m",
                 "150 sq.mm * 3.0 m",
                 "200 sq.mm * 2.4 m",
-                "200 sq.mm * 3.0 m"
+                "200 sq.mm * 3.0 m",
+                "N/A"
             ]
 
             if mode == "ลงข้อมูลสายใหม่":
