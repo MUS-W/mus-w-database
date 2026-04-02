@@ -124,13 +124,12 @@ if check_password():
             
             st.markdown("**⚙️ ระบุชื่อ Machine:**")
             col_m1, col_m2, col_m3 = st.columns([1, 2, 1])
-            with col_m1: m_prefix = st.selectbox("ประเภท", ["M", "U", "D", "A"])
-            with col_m2: m_number = st.text_input("ตัวเลข", placeholder="เช่น 1, 2, 10")
-            with col_m3: m_group = st.selectbox("กลุ่ม", ["G1", "G2"])
+            with col_m1: m_prefix = st.selectbox("Tranformer", ["M", "U", "D", "A"])
+            with col_m2: m_number = st.text_input("Number", placeholder="เช่น 1, 2, 10")
+            with col_m3: m_group = st.selectbox("Gun", ["G1", "G2"])
             
             # รวมร่างชื่อ Machine
             m_full_name = f"{m_prefix}{m_number}{m_group}"
-            st.info(f"ชื่อ Machine ที่จะบันทึก: **{m_full_name}**")
 
             c_spec = st.selectbox("เลือกสเปคสาย:", ["150 sq.mm * 2.4 m", "150 sq.mm * 3.0 m", "200 sq.mm * 2.4 m", "200 sq.mm * 3.0 m", "N/A"])
 
