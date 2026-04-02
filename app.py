@@ -101,8 +101,9 @@ if check_password():
     def get_data(): return conn.read(worksheet="Kickless", ttl="1s")
     st.markdown('<div class="mus-header">MUS-W</div>', unsafe_allow_html=True)
     main_tab, tab_other1, tab_other2 = st.tabs(["Kickless", "Welding Transformer", "Other"])
-        with main_tab:
-        # เปลี่ยนชื่อแท็บ 2 ให้ชัดเจนว่าเป็นการลงข้อมูล
+    
+    # 💡 แก้ไขการเว้นวรรคตรงนี้ให้ถูกต้องแล้วครับ
+    with main_tab:
         sub_tab1, sub_tab2, sub_tab3 = st.tabs(["🔍 ค้นหาข้อมูล", "⚙️ ลงข้อมูลเปลี่ยนสาย", "📊 ภาพรวม"])
 
         # -------- แท็บ 1: ค้นหา (ค้นหาด้วยชื่อ Machine เต็ม) --------
