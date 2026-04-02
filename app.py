@@ -124,7 +124,7 @@ if check_password():
             
             st.markdown("**⚙️ ระบุชื่อ Machine:**")
             col_m1, col_m2, col_m3 = st.columns([1, 2, 1])
-            with col_m1: m_prefix = st.selectbox("Tranformer", ["M", "U", "D", "A"])
+            with col_m1: m_prefix = st.selectbox("Tranformer", ["M", "U", "D", "A", "Z"])
             with col_m2: m_number = st.text_input("Number", placeholder="เช่น 1, 2, 10")
             with col_m3: m_group = st.selectbox("Gun", ["G1", "G2"])
             
